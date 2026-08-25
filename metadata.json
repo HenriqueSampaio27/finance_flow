@@ -1,0 +1,5 @@
+{
+  "name": "FinanceFlow - Gestão Financeira SME",
+  "description": "Sistema de gestão financeira corporativa com Entradas, Saídas, Contas a Pagar, Contas a Receber, Orçamento, Cadastro de Clientes e Relatórios DRE.",
+  "requestFramePermissions": []
+}
