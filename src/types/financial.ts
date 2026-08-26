@@ -75,27 +75,6 @@ export interface BudgetItem {
   statusType: 'ok' | 'warning' | 'alert' | 'info';
 }
 
-export interface ClientItem {
-  id: string;
-  nome: string;
-  cpfCnpj: string;
-  inscricaoEstadual?: string;
-  email: string;
-  telefone: string;
-  responsavel: string;
-  cep: string;
-  logradouro: string;
-  numero: string;
-  complemento?: string;
-  bairro: string;
-  cidade: string;
-  uf: string;
-  limiteCredito: number;
-  condicaoPagamento: string;
-  observacoes?: string;
-  createdAt: string;
-}
-
 export interface MonthlyCashFlow {
   month: string;
   entradas: number;

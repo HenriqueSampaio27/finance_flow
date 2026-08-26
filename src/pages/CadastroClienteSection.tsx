@@ -10,7 +10,7 @@ import {
   Check, 
   AlertCircle 
 } from 'lucide-react';
-import { ClientItem } from '../types';
+import { ClientItem } from '../types/clientType';
 import { clientsTheme, styles, typography } from '../theme';
 
 interface CadastroClienteSectionProps {
@@ -25,22 +25,20 @@ export const CadastroClienteSection: React.FC<CadastroClienteSectionProps> = ({
   onSelectClient,
 }) => {
   const [formData, setFormData] = useState<Partial<ClientItem>>({
-    nome: '',
-    cpfCnpj: '',
-    inscricaoEstadual: '',
-    email: '',
-    telefone: '',
-    responsavel: '',
-    cep: '',
-    logradouro: '',
-    numero: '',
-    complemento: '',
-    bairro: '',
-    cidade: 'São Paulo',
-    uf: 'SP',
-    limiteCredito: 0,
-    condicaoPagamento: '30 dias',
-    observacoes: '',
+    id: 0,
+    name: "",
+    cpf: "",
+    phone: "",
+    address: "",
+    district: "",
+    number: "",
+    city: "",
+    state: "",
+    zip_code: "",
+    email: "",
+    state_registration: "",
+    observation: "",
+    complement: ""
   });
 
   const [searchSaved, setSearchSaved] = useState('');
@@ -52,7 +50,7 @@ export const CadastroClienteSection: React.FC<CadastroClienteSectionProps> = ({
   };
 
   const handleCepLookup = async () => {
-    const rawCep = formData.cep?.replace(/\D/g, '');
+    const rawCep = formData.zip_code?.replace(/\D/g, '');
     if (!rawCep || rawCep.length !== 8) return;
     setLoadingCep(true);
     try {
@@ -61,10 +59,10 @@ export const CadastroClienteSection: React.FC<CadastroClienteSectionProps> = ({
       if (!data.erro) {
         setFormData(prev => ({
           ...prev,
-          logradouro: data.logradouro || prev.logradouro,
-          bairro: data.bairro || prev.bairro,
-          cidade: data.localidade || prev.cidade,
-          uf: data.uf || prev.uf,
+          address: data.address || prev.address,
+          district: data.district || prev.district,
+          city: data.city || prev.city,
+          state: data.state || prev.state,
         }));
       }
     } catch (e) {
@@ -76,27 +74,22 @@ export const CadastroClienteSection: React.FC<CadastroClienteSectionProps> = ({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.nome) return;
+    if (!formData.name) return;
 
     const newClient: ClientItem = {
-      id: `cli-${Date.now()}`,
-      nome: formData.nome || 'Novo Cliente',
-      cpfCnpj: formData.cpfCnpj || '00.000.000/0001-00',
-      inscricaoEstadual: formData.inscricaoEstadual || '',
+      name: formData.name || 'Novo Cliente',
+      cpf: formData.cpf || '000.000.000-00',
+      state_registration: formData.state_registration || '',
       email: formData.email || '',
-      telefone: formData.telefone || '',
-      responsavel: formData.responsavel || '',
-      cep: formData.cep || '',
-      logradouro: formData.logradouro || '',
-      numero: formData.numero || '',
-      complemento: formData.complemento || '',
-      bairro: formData.bairro || '',
-      cidade: formData.cidade || 'São Paulo',
-      uf: formData.uf || 'SP',
-      limiteCredito: Number(formData.limiteCredito) || 0,
-      condicaoPagamento: formData.condicaoPagamento || '30 dias',
-      observacoes: formData.observacoes || '',
-      createdAt: new Date().toISOString().split('T')[0],
+      phone: formData.phone || '',
+      zip_code: formData.zip_code || '',
+      address: formData.address || '',
+      number: formData.number || '',
+      complement: formData.complement || '',
+      district: formData.district || '',
+      city: formData.city || 'Santa Inês',
+      state: formData.state || 'MA',
+      observation: formData.observation || '',
     };
 
     onSaveClient(newClient);
@@ -104,22 +97,20 @@ export const CadastroClienteSection: React.FC<CadastroClienteSectionProps> = ({
     setTimeout(() => {
       setSaveSuccess(false);
       setFormData({
-        nome: '',
-        cpfCnpj: '',
-        inscricaoEstadual: '',
-        email: '',
-        telefone: '',
-        responsavel: '',
-        cep: '',
-        logradouro: '',
-        numero: '',
-        complemento: '',
-        bairro: '',
-        cidade: 'São Paulo',
-        uf: 'SP',
-        limiteCredito: 0,
-        condicaoPagamento: '30 dias',
-        observacoes: '',
+        id: 0,
+        name: "",
+        cpf: "",
+        phone: "",
+        address: "",
+        district: "",
+        number: "",
+        city: "",
+        state: "",
+        zip_code: "",
+        email: "",
+        state_registration: "",
+        observation: "",
+        complement: ""
       });
     }, 1500);
   };
@@ -130,8 +121,8 @@ export const CadastroClienteSection: React.FC<CadastroClienteSectionProps> = ({
   };
 
   const filteredRecent = clients.filter(c => 
-    c.nome.toLowerCase().includes(searchSaved.toLowerCase()) || 
-    c.cpfCnpj.includes(searchSaved)
+    c.name.toLowerCase().includes(searchSaved.toLowerCase()) || 
+    c.cpf.includes(searchSaved)
   );
 
   return (
@@ -187,8 +178,8 @@ export const CadastroClienteSection: React.FC<CadastroClienteSectionProps> = ({
                   id="client-name-input"
                   type="text"
                   placeholder="Ex: Tech Solutions Ltda"
-                  value={formData.nome || ''}
-                  onChange={(e) => handleInputChange('nome', e.target.value)}
+                  value={formData.name || ''}
+                  onChange={(e) => handleInputChange('name', e.target.value)}
                   className={styles.input}
                   required
                 />
@@ -201,9 +192,9 @@ export const CadastroClienteSection: React.FC<CadastroClienteSectionProps> = ({
                   </label>
                   <input
                     type="text"
-                    placeholder="00.000.000/0001-00"
-                    value={formData.cpfCnpj || ''}
-                    onChange={(e) => handleInputChange('cpfCnpj', e.target.value)}
+                    placeholder="000.000.000-00"
+                    value={formData.cpf || ''}
+                    onChange={(e) => handleInputChange('cpf', e.target.value)}
                     className={styles.input}
                   />
                 </div>
@@ -214,8 +205,8 @@ export const CadastroClienteSection: React.FC<CadastroClienteSectionProps> = ({
                   <input
                     type="text"
                     placeholder="Opcional"
-                    value={formData.inscricaoEstadual || ''}
-                    onChange={(e) => handleInputChange('inscricaoEstadual', e.target.value)}
+                    value={formData.state_registration || ''}
+                    onChange={(e) => handleInputChange('state_registration', e.target.value)}
                     className={styles.input}
                   />
                 </div>
@@ -251,20 +242,8 @@ export const CadastroClienteSection: React.FC<CadastroClienteSectionProps> = ({
                   <input
                     type="text"
                     placeholder="(11) 90000-0000"
-                    value={formData.telefone || ''}
-                    onChange={(e) => handleInputChange('telefone', e.target.value)}
-                    className={styles.input}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">
-                    Responsável
-                  </label>
-                  <input
-                    type="text"
-                    placeholder="Nome do contato"
-                    value={formData.responsavel || ''}
-                    onChange={(e) => handleInputChange('responsavel', e.target.value)}
+                    value={formData.phone || ''}
+                    onChange={(e) => handleInputChange('phone', e.target.value)}
                     className={styles.input}
                   />
                 </div>
@@ -288,8 +267,8 @@ export const CadastroClienteSection: React.FC<CadastroClienteSectionProps> = ({
                     <input
                       type="text"
                       placeholder="00000-000"
-                      value={formData.cep || ''}
-                      onChange={(e) => handleInputChange('cep', e.target.value)}
+                      value={formData.zip_code || ''}
+                      onChange={(e) => handleInputChange('zip_code', e.target.value)}
                       onBlur={handleCepLookup}
                       className={styles.input}
                     />
@@ -310,8 +289,8 @@ export const CadastroClienteSection: React.FC<CadastroClienteSectionProps> = ({
                   <input
                     type="text"
                     placeholder="Rua/Avenida"
-                    value={formData.logradouro || ''}
-                    onChange={(e) => handleInputChange('logradouro', e.target.value)}
+                    value={formData.address || ''}
+                    onChange={(e) => handleInputChange('address', e.target.value)}
                     className={styles.input}
                   />
                 </div>
@@ -323,8 +302,8 @@ export const CadastroClienteSection: React.FC<CadastroClienteSectionProps> = ({
                   <input
                     type="text"
                     placeholder="123"
-                    value={formData.numero || ''}
-                    onChange={(e) => handleInputChange('numero', e.target.value)}
+                    value={formData.number || ''}
+                    onChange={(e) => handleInputChange('number', e.target.value)}
                     className={styles.input}
                   />
                 </div>
@@ -333,8 +312,8 @@ export const CadastroClienteSection: React.FC<CadastroClienteSectionProps> = ({
                   <input
                     type="text"
                     placeholder="Sala/Apto"
-                    value={formData.complemento || ''}
-                    onChange={(e) => handleInputChange('complemento', e.target.value)}
+                    value={formData.complement || ''}
+                    onChange={(e) => handleInputChange('complement', e.target.value)}
                     className={styles.input}
                   />
                 </div>
@@ -343,8 +322,8 @@ export const CadastroClienteSection: React.FC<CadastroClienteSectionProps> = ({
                   <input
                     type="text"
                     placeholder="Centro"
-                    value={formData.bairro || ''}
-                    onChange={(e) => handleInputChange('bairro', e.target.value)}
+                    value={formData.district || ''}
+                    onChange={(e) => handleInputChange('district', e.target.value)}
                     className={styles.input}
                   />
                 </div>
@@ -356,18 +335,19 @@ export const CadastroClienteSection: React.FC<CadastroClienteSectionProps> = ({
                   <input
                     type="text"
                     placeholder="São Paulo"
-                    value={formData.cidade || ''}
-                    onChange={(e) => handleInputChange('cidade', e.target.value)}
+                    value={formData.city || ''}
+                    onChange={(e) => handleInputChange('city', e.target.value)}
                     className={styles.input}
                   />
                 </div>
                 <div className="sm:col-span-4">
                   <label className="block text-xs font-semibold text-slate-600 mb-1">UF</label>
                   <select
-                    value={formData.uf || 'SP'}
-                    onChange={(e) => handleInputChange('uf', e.target.value)}
+                    value={formData.state || 'MA'}
+                    onChange={(e) => handleInputChange('state', e.target.value)}
                     className={styles.input}
                   >
+                    <option value="MA">MA</option>
                     <option value="SP">SP</option>
                     <option value="RJ">RJ</option>
                     <option value="MG">MG</option>
@@ -390,36 +370,6 @@ export const CadastroClienteSection: React.FC<CadastroClienteSectionProps> = ({
               <span>Dados Financeiros</span>
             </div>
             <div className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">
-                    Limite de Crédito
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="R$ 0,00"
-                    value={formData.limiteCredito || 0}
-                    onChange={(e) => handleInputChange('limiteCredito', Number(e.target.value))}
-                    className={styles.input}
-                  />
-                </div>
-                <div>
-                  <label className="block text-xs font-semibold text-slate-600 mb-1">
-                    Condição de Pagamento Padrão
-                  </label>
-                  <select
-                    value={formData.condicaoPagamento || '30 dias'}
-                    onChange={(e) => handleInputChange('condicaoPagamento', e.target.value)}
-                    className={styles.input}
-                  >
-                    <option value="À Vista">À Vista</option>
-                    <option value="15 dias">15 dias</option>
-                    <option value="30 dias">30 dias</option>
-                    <option value="45 dias">45 dias</option>
-                    <option value="60 dias">60 dias</option>
-                  </select>
-                </div>
-              </div>
 
               <div>
                 <label className="block text-xs font-semibold text-slate-600 mb-1">
@@ -428,8 +378,8 @@ export const CadastroClienteSection: React.FC<CadastroClienteSectionProps> = ({
                 <textarea
                   rows={3}
                   placeholder="Anotações internas sobre o cliente..."
-                  value={formData.observacoes || ''}
-                  onChange={(e) => handleInputChange('observacoes', e.target.value)}
+                  value={formData.observation || ''}
+                  onChange={(e) => handleInputChange('observation', e.target.value)}
                   className={styles.input}
                 />
               </div>
@@ -469,14 +419,14 @@ export const CadastroClienteSection: React.FC<CadastroClienteSectionProps> = ({
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-8 h-8 rounded-full bg-blue-100 text-[#003d9b] font-bold text-xs flex items-center justify-center">
-                        {c.nome.charAt(0)}
+                        {c.name.charAt(0)}
                       </div>
                       <div>
                         <p className="text-xs font-semibold text-slate-900 group-hover:text-[#003d9b]">
-                          {c.nome}
+                          {c.name}
                         </p>
                         <p className="text-[11px] text-slate-400 font-mono mt-0.5">
-                          {c.cpfCnpj}
+                          {c.cpf}
                         </p>
                       </div>
                     </div>
