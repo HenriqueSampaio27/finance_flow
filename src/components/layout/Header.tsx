@@ -3,11 +3,13 @@ import { Search, Bell, Settings, FileSpreadsheet } from 'lucide-react';
 
 interface HeaderProps {
   onOpenQuickReport: () => void;
+  onOpenConfig: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   
-  onOpenQuickReport
+  onOpenQuickReport,
+  onOpenConfig
 }) => {
   return (
     <header className="h-16 bg-white border-b border-slate-200/90 px-6 lg:px-8 flex items-center justify-between sticky top-0 z-10">
@@ -38,6 +40,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         <button 
           id="header-settings-btn"
+          onClick={onOpenConfig}
           className="p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer"
           title="Configurações"
         >

@@ -18,12 +18,14 @@ interface SidebarProps {
   currentTab: NavigationTab;
   onSelectTab: (tab: NavigationTab) => void;
   onOpenNewEntry: () => void;
+  onOpenConfig: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   currentTab,
   onSelectTab,
-  onOpenNewEntry
+  onOpenNewEntry,
+  onOpenConfig
 }) => {
   const menuItems = [
     { id: 'dashboard' as NavigationTab, label: 'Dashboard', icon: LayoutGrid },
@@ -97,7 +99,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <div className="p-4 border-t border-slate-100 space-y-3">
         <div className="space-y-1">
           <button 
-            onClick={() => onSelectTab('dashboard')}
+            onClick={onOpenConfig}
             className="w-full flex items-center gap-3 px-3 py-2 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer"
           >
             <Settings className="w-4 h-4 text-slate-400" />

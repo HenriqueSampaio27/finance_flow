@@ -59,10 +59,11 @@ export const CadastroClienteSection: React.FC<CadastroClienteSectionProps> = ({
       if (!data.erro) {
         setFormData(prev => ({
           ...prev,
-          address: data.address || prev.address,
-          district: data.district || prev.district,
-          city: data.city || prev.city,
-          state: data.state || prev.state,
+          
+          address: data.logradouro || prev.address,
+          district: data.bairro || prev.district,
+          city: data.localidade || prev.city,
+          state: data.uf || prev.state,
         }));
       }
     } catch (e) {

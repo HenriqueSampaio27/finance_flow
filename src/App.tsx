@@ -19,6 +19,8 @@ import { useExpenses } from './hooks/useExpenses';
 import {usePayables} from "./hooks/usePayables"
 import {useReceivables} from "./hooks/useReceivables"
 import {useClients} from "./hooks/useClients"
+import {useUser} from "./hooks/useUser"
+import { UserModal } from './components/modals/ConfigModal';
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState<NavigationTab>('entradas');
@@ -52,6 +54,13 @@ export default function App() {
     saveClient,
     clients
   } = useClients()
+  const {
+    saveUser,
+    loadUser,
+    error,
+    loading,
+    user
+  } = useUser()
 
   const filteredEntries = entries.filter(
     entry => !search || entry.descricao.toLowerCase().includes(search) ||
@@ -72,6 +81,7 @@ export default function App() {
   );
 
   // Modals state
+  const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [isNewEntryOpen, setIsNewEntryOpen] = useState(false);
   const [isNewExpenseOpen, setIsNewExpenseOpen] = useState(false);
   const [isQuickReportOpen, setIsQuickReportOpen] = useState(false);
@@ -86,6 +96,7 @@ export default function App() {
         currentTab={currentTab}
         onSelectTab={setCurrentTab}
         onOpenNewEntry={() => setIsNewEntryOpen(true)}
+        onOpenConfig={() => setIsUserModalOpen(true)}
       />
 
       {/* Main Content Area */}
@@ -93,6 +104,7 @@ export default function App() {
         {/* Top Header */}
         <Header
           onOpenQuickReport={() => setIsQuickReportOpen(true)}
+          onOpenConfig={() => setIsUserModalOpen(true)}
         />
 
         {/* Dynamic View Router */}
@@ -168,6 +180,13 @@ export default function App() {
       </div>
 
       {/* Global Modals */}
+      <UserModal
+        isOpen={isUserModalOpen}
+        onClose={() => setIsUserModalOpen(false)}
+        user={user} 
+        onUpdate={saveUser}
+      />
+
       <NovaEntradaModal
         isOpen={isNewEntryOpen}
         onClose={() => setIsNewEntryOpen(false)}
@@ -186,6 +205,8 @@ export default function App() {
         totalRecebido={totalRecebido}
         totalGasto={totalGasto}
       />
+
+      
     </div>
   );
 }

@@ -14,6 +14,8 @@ db.pragma("foreign_keys = ON");
 // Caminho do schema
 const schemaPath = path.join(__dirname, "schema.sql");
 
+
+
 // Lê o schema
 const schema = fs.readFileSync(schemaPath, "utf-8");
 
