@@ -11,10 +11,11 @@ const db = new Database(dbPath);
 // Ativa o uso de chaves estrangeiras
 db.pragma("foreign_keys = ON");
 
+
+const columns = db.prepare("PRAGMA table_info(project)").all();
+
 // Caminho do schema
 const schemaPath = path.join(__dirname, "schema.sql");
-
-
 
 // Lê o schema
 const schema = fs.readFileSync(schemaPath, "utf-8");

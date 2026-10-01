@@ -12,7 +12,7 @@ export const typography = {
     trend: 'text-xs font-medium flex items-center gap-1 mt-1.5',
   },
   table: {
-    header: 'text-xs font-semibold uppercase tracking-wider text-slate-400 py-3.5 px-4',
+    header: 'text-xs font-semibold uppercase tracking-wider text-slate-400 py-3.5 px-5',
     cell: 'text-sm text-slate-700 py-4 px-4 font-normal',
     cellEmphasis: 'text-sm font-semibold text-slate-900 py-4 px-4 tabular-nums',
   },

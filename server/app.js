@@ -4,13 +4,20 @@ const app = express();
 
 const clientRoutes = require("./routes/clientRoutes");
 const userRoutes = require("./routes/userRoute")
+const entryRoutes  =require("./routes/entryRoutes")
+const expenseRoutes = require("./routes/expenseRoutes")
+const payableRoutes = require("./routes/payableRoutes")
+const projectRoutes = require("./routes/projectRoutes")
 
 app.use(cors);
 app.use(express.json());
 
 app.use("/clients", clientRoutes);
 app.use("/user", userRoutes);
-
+app.use("/entry", entryRoutes)
+app.use("/expense", expenseRoutes)
+app.use("/payable", payableRoutes)
+app.use("/project", projectRoutes)
 
 
 app.get("/", (req, res) => {

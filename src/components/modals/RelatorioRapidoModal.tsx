@@ -5,20 +5,20 @@ import { formatCurrency } from '../../utils/formatters';
 interface RelatorioRapidoModalProps {
   isOpen: boolean;
   onClose: () => void;
-  totalRecebido: number;
+  //totalRecebido: number;
   totalGasto: number;
 }
 
 export const RelatorioRapidoModal: React.FC<RelatorioRapidoModalProps> = ({
   isOpen,
   onClose,
-  totalRecebido,
+  //totalRecebido,
   totalGasto,
 }) => {
   if (!isOpen) return null;
 
-  const saldo = totalRecebido - totalGasto;
-  const margem = totalRecebido > 0 ? Math.round((saldo / totalRecebido) * 100) : 0;
+  const saldo = totalGasto-totalGasto//totalRecebido - totalGasto;
+  const margem = totalGasto > 0 ? Math.round((saldo / totalGasto) * 100) : 0;//totalRecebido > 0 ? Math.round((saldo / totalRecebido) * 100) : 0;
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
@@ -44,7 +44,7 @@ export const RelatorioRapidoModal: React.FC<RelatorioRapidoModalProps> = ({
         <div className="space-y-3.5 my-4 text-xs">
           <div className="p-3 bg-slate-50 rounded-xl flex items-center justify-between">
             <span className="text-slate-600 font-medium">Entradas Consolidadas:</span>
-            <span className="font-bold text-emerald-600 tabular-nums">{formatCurrency(totalRecebido)}</span>
+            <span className="font-bold text-emerald-600 tabular-nums">{formatCurrency(totalGasto)}</span>
           </div>
 
           <div className="p-3 bg-slate-50 rounded-xl flex items-center justify-between">

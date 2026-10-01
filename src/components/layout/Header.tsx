@@ -1,21 +1,25 @@
 import React from 'react';
 import { Search, Bell, Settings, FileSpreadsheet } from 'lucide-react';
+import { UserType } from '@/src/types/userType';
+import { title_div_one, title_div_two } from '@/src/types/titleFinanceFlow';
 
 interface HeaderProps {
   onOpenQuickReport: () => void;
   onOpenConfig: () => void;
+  user: UserType | null | undefined
 }
 
 export const Header: React.FC<HeaderProps> = ({
   
   onOpenQuickReport,
-  onOpenConfig
+  onOpenConfig,
+  user
 }) => {
   return (
     <header className="h-16 bg-white border-b border-slate-200/90 px-6 lg:px-8 flex items-center justify-between sticky top-0 z-10">
       <div className="flex items-center gap-6 flex-1 max-w-xl">
         <h2 className="text-base font-bold text-slate-800 tracking-tight hidden sm:block shrink-0">
-          Fluxo <span className="text-[#003d9b]">Financeiro</span>
+          {title_div_one} <span className="text-[#003d9b]">{title_div_two}</span>
         </h2>
       </div>
 
@@ -51,7 +55,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         <div className="flex items-center gap-3">
           <div className="text-right hidden sm:block">
-            <p className="text-xs font-semibold text-slate-900 leading-tight">Admin User</p>
+            <p className="text-xs font-semibold text-slate-900 leading-tight">{user? user.name: ""}</p>
             <p className="text-[11px] text-slate-400 font-medium">Plan: Premium</p>
           </div>
           <div className="w-9 h-9 rounded-full bg-slate-100 overflow-hidden ring-1 ring-slate-300">

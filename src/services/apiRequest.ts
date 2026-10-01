@@ -1,4 +1,4 @@
-import { baseUrl } from "./authService";
+import { baseUrl } from "./AuthService";
 
 export async function apiRequest<T>(
   endpoint: string,

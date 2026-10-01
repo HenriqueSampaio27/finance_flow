@@ -1,50 +1,82 @@
 import React, { useState } from 'react';
-import { X, Plus } from 'lucide-react';
-import { ExpenseItem, StatusPagamento } from '../../types';
+import { X, Plus, FlaskRound } from 'lucide-react';
+import { ExpenseItem } from '../../types/expensesType';
 import { styles } from '../../theme';
+import { UserType } from '@/src/types/userType';
 
-interface NovaSaidaModalProps {
+interface ExpensesModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAddExpense: (expense: ExpenseItem) => void;
+  user: UserType | undefined | null;
 }
 
-export const NovaSaidaModal: React.FC<NovaSaidaModalProps> = ({
+export const ExpensesModal: React.FC<ExpensesModalProps> = ({
   isOpen,
   onClose,
   onAddExpense,
+  user
 }) => {
-  const [data, setData] = useState(new Date().toISOString().split('T')[0]);
-  const [fornecedor, setFornecedor] = useState('');
-  const [categoria, setCategoria] = useState('Cloud Services');
-  const [conta, setConta] = useState('Itaú PJ');
-  const [valor, setValor] = useState('');
-  const [obs, setObs] = useState('');
-  const [status, setStatus] = useState<StatusPagamento>('Pendente');
+  const [formData, setFormData] = useState<Partial<ExpenseItem>>({
+        date: "",
+        amount: 0,
+        supplier: "",
+        category: "",
+        outgoing_account: "",
+        observations: "",
+        installment: ""
+      });
+  
+    const initialData = {
+        date: "",
+        amount: 0,
+        supplier: "",
+        category: "",
+        outgoing_account: "",
+        observation: "",
+        installment: ""
+      }
 
   if (!isOpen) return null;
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!fornecedor || !valor) return;
+    if (!formData.amount || !formData.date) return;
 
     const newExpense: ExpenseItem = {
-      id: `exp-${Date.now()}`,
-      data: data.split('-').reverse().join('/'),
-      fornecedor,
-      avatarLetter: fornecedor.charAt(0).toUpperCase() || 'F',
-      avatarBgColor: 'bg-rose-100 text-rose-700',
-      categoria,
-      conta,
-      valor: parseFloat(valor.replace(',', '.')) || 0,
-      status,
-      obs: obs || 'Sem observações adicionais',
-      temAnexo: false,
+      date: formData.date,
+      amount: formData.amount,
+      supplier: formData.supplier || "",
+      category: formData.category || "Outros",
+      outgoing_account: formData.outgoing_account || "Caixa Interno",
+      observations: formData.observations || "",
+      installment: formData.installment || "1/1"
     };
-
+    
     onAddExpense(newExpense);
+    setFormData(initialData)
     onClose();
   };
+
+  const handleInputChange = (
+    field: keyof ExpenseItem,
+    value: string | number
+  ) => {
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const bankAccounts = [
+      user?.bank_account1,
+      user?.bank_account2,
+      user?.bank_account3,
+      user?.bank_account4,
+      user?.bank_account5,
+    ].filter((account): account is string => 
+      !!account && account.trim() !== ""
+    );
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
@@ -67,14 +99,14 @@ export const NovaSaidaModal: React.FC<NovaSaidaModalProps> = ({
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form     className="space-y-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-semibold text-slate-600 mb-1">Data</label>
               <input
                 type="date"
-                value={data}
-                onChange={(e) => setData(e.target.value)}
+                value={formData.date}
+                onChange={(e) => handleInputChange("date", e.target.value)}
                 className={styles.input}
                 required
               />
@@ -85,8 +117,8 @@ export const NovaSaidaModal: React.FC<NovaSaidaModalProps> = ({
                 type="number"
                 step="0.01"
                 placeholder="0,00"
-                value={valor}
-                onChange={(e) => setValor(e.target.value)}
+                value={formData.amount}
+                onChange={(e) => handleInputChange("amount",e.target.value)}
                 className={styles.input}
                 required
               />
@@ -98,8 +130,8 @@ export const NovaSaidaModal: React.FC<NovaSaidaModalProps> = ({
             <input
               type="text"
               placeholder="Ex: Amazon Web Services"
-              value={fornecedor}
-              onChange={(e) => setFornecedor(e.target.value)}
+              value={formData.supplier}
+              onChange={(e) => handleInputChange("supplier" ,e.target.value)}
               className={styles.input}
               required
             />
@@ -109,8 +141,8 @@ export const NovaSaidaModal: React.FC<NovaSaidaModalProps> = ({
             <div>
               <label className="block text-xs font-semibold text-slate-600 mb-1">Categoria</label>
               <select
-                value={categoria}
-                onChange={(e) => setCategoria(e.target.value)}
+                value={formData.category}
+                onChange={(e) => handleInputChange("category" ,e.target.value)}
                 className={styles.input}
               >
                 <option>Cloud Services</option>
@@ -124,13 +156,19 @@ export const NovaSaidaModal: React.FC<NovaSaidaModalProps> = ({
             <div>
               <label className="block text-xs font-semibold text-slate-600 mb-1">Conta de Saída</label>
               <select
-                value={conta}
-                onChange={(e) => setConta(e.target.value)}
+                value={formData.outgoing_account}
+                onChange={(e) => handleInputChange("outgoing_account", e.target.value)}
                 className={styles.input}
               >
-                <option>Itaú PJ</option>
-                <option>NuBank PJ</option>
-                <option>Caixa</option>
+                  {bankAccounts.map((account, index) => (
+                    <option key={index} value={account}>
+                      {account}
+                    </option>
+                  ))}
+
+                  <option value="Caixa Interno">
+                    Caixa Interno
+                  </option>
               </select>
             </div>
           </div>
@@ -140,28 +178,21 @@ export const NovaSaidaModal: React.FC<NovaSaidaModalProps> = ({
             <input
               type="text"
               placeholder="Ex: Fatura mensal referente a servidores"
-              value={obs}
-              onChange={(e) => setObs(e.target.value)}
+              value={formData.observations}
+              onChange={(e) => handleInputChange("observations", e.target.value)}
               className={styles.input}
             />
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1">Status</label>
-            <div className="flex gap-4">
-              {(['Pago', 'Pendente', 'Vencido'] as StatusPagamento[]).map((st) => (
-                <label key={st} className="flex items-center gap-2 text-xs font-medium text-slate-700 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="statusExpense"
-                    checked={status === st}
-                    onChange={() => setStatus(st)}
-                    className="text-[#003d9b] focus:ring-[#003d9b]"
-                  />
-                  <span>{st}</span>
-                </label>
-              ))}
-            </div>
+            <label className="block text-xs font-semibold text-slate-600 mb-1">Parcelas</label>
+            <input
+              type="text"
+              placeholder="1/5"
+              value={formData.installment}
+              onChange={(e) => handleInputChange("installment", e.target.value)}
+              className={styles.input}
+            />
           </div>
 
           <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3 mt-6">
@@ -174,6 +205,7 @@ export const NovaSaidaModal: React.FC<NovaSaidaModalProps> = ({
             </button>
             <button
               type="submit"
+              onClick={handleSubmit}
               className={styles.primaryButton}
             >
               Salvar Saída

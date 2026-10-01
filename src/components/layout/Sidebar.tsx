@@ -13,19 +13,23 @@ import {
   UserPlus
 } from 'lucide-react';
 import { NavigationTab } from '../../types';
+import { UserType } from '@/src/types/userType';
+import { subtitle, title_div_one, title_div_two } from '@/src/types/titleFinanceFlow';
 
 interface SidebarProps {
   currentTab: NavigationTab;
   onSelectTab: (tab: NavigationTab) => void;
   onOpenNewEntry: () => void;
   onOpenConfig: () => void;
+  user: UserType | null | undefined
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
   currentTab,
   onSelectTab,
   onOpenNewEntry,
-  onOpenConfig
+  onOpenConfig,
+  user
 }) => {
   const menuItems = [
     { id: 'dashboard' as NavigationTab, label: 'Dashboard', icon: LayoutGrid },
@@ -34,6 +38,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'contas-pagar' as NavigationTab, label: 'Contas a Pagar', icon: CalendarDays },
     { id: 'contas-receber' as NavigationTab, label: 'Contas a Receber', icon: Receipt },
     { id: 'orcamento' as NavigationTab, label: 'Orçamento', icon: TrendingUp },
+    { id: 'projetos' as NavigationTab, label: 'Projeto', icon: TrendingUp },
     { id: 'relatorios' as NavigationTab, label: 'Relatórios', icon: BarChart3 },
     { id: 'cadastro-cliente' as NavigationTab, label: 'Cadastro de Cliente', icon: UserPlus },
   ];
@@ -48,10 +53,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
           <div>
             <h1 className="font-bold text-lg text-slate-900 tracking-tight leading-none flex items-center">
-              Finance<span className="text-[#003d9b]">Flow</span>
+              {title_div_one}<span className="text-[#003d9b]">{title_div_two}</span>
             </h1>
             <p className="text-[11px] font-medium text-slate-400 mt-1 uppercase tracking-wider">
-              Raynex Solutions
+              {subtitle}
             </p>
           </div>
         </div>
@@ -119,8 +124,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
             />
           </div>
           <div className="truncate flex-1">
-            <p className="text-xs font-semibold text-slate-800 leading-tight truncate">Admin User</p>
-            <p className="text-[11px] text-slate-400 leading-tight truncate">accountant@flow.com</p>
+            <p className="text-xs font-semibold text-slate-800 leading-tight truncate">{user? user.name: ""}</p>
+            <p className="text-[11px] text-slate-400 leading-tight truncate">{user? user.cpf: ""}</p>
           </div>
         </div>
       </div>

@@ -6,13 +6,13 @@ export const entriesTheme = {
   },
   kpiCards: {
     totalReceived: {
-      label: 'TOTAL RECEBIDO (MÊS)',
+      label: 'TOTAL RECEBIDO',
       trend: '+12.5% vs. mês anterior',
       trendType: 'positive' as const,
       color: 'emerald',
     },
-    pending: {
-      label: 'PENDENTE DE RECEBIMENTO',
+    count: {
+      label: 'TOTAL DE ENTRADAS',
       sublabel: '14 faturas em aberto',
       color: 'blue',
     },

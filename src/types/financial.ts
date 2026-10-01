@@ -6,36 +6,11 @@ export type NavigationTab =
   | 'contas-receber'
   | 'orcamento'
   | 'relatorios'
+  | 'projetos'
   | 'cadastro-cliente';
 
 export type StatusRecebimento = 'Recebido' | 'Pendente' | 'Atrasado' | 'Cancelado';
 export type StatusPagamento = 'Pago' | 'Pendente' | 'Vencido' | 'Agendado' | 'Parcial';
-
-export interface EntryItem {
-  id: string;
-  data: string;
-  descricao: string;
-  categoria: string;
-  cliente: string;
-  recebimento: 'Transferência' | 'Pix' | 'Boleto' | 'Cartão' | 'Dinheiro';
-  conta: 'Itaú PJ' | 'NuBank PJ' | 'Caixa Interno' | 'Bradesco' | 'Santander';
-  valor: number;
-  status: StatusRecebimento;
-}
-
-export interface ExpenseItem {
-  id: string;
-  data: string; // e.g. "12 Mai 2024"
-  fornecedor: string;
-  avatarLetter: string;
-  avatarBgColor?: string;
-  categoria: string;
-  conta: string;
-  valor: number;
-  status: StatusPagamento;
-  obs: string;
-  temAnexo: boolean;
-}
 
 export interface PayableItem {
   id: string;

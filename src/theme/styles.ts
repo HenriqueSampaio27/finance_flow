@@ -1,7 +1,7 @@
 export const styles = {
   // Main Layout
   pageContainer: 'p-6 lg:p-8 max-w-[1440px] mx-auto space-y-6',
-  card: 'bg-white rounded-xl border border-slate-200/90 shadow-[0_1px_3px_rgba(0,0,0,0.05)] overflow-hidden',
+  card: 'bg-white rounded-xl border border-slate-200/90 shadow-[0_1px_3px_rgba(0,0,0,0.05)]',
   cardPadded: 'bg-white rounded-xl border border-slate-200/90 shadow-[0_1px_3px_rgba(0,0,0,0.05)] p-6',
   
   // Buttons

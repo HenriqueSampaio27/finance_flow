@@ -4,23 +4,26 @@ import { initialBudgetItems } from './data/initialData';
 import { Sidebar } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
 import { DashboardSection } from './pages/DashboardSection';
-import { EntradasSection } from './pages/EntradasSection';
-import { SaidasSection } from './pages/SaidasSection';
-import { ContasPagarSection } from './pages/ContasPagarSection';
+import { EntradasSection } from './pages/EntrySection';
+import { ExpensesSection } from './pages/ExpensesSection';
+import { AccountPayableSection } from './pages/AccountPayableSection';
 import { ContasReceberSection } from './pages/ContasReceberSection';
 import { OrcamentoSection } from './pages/OrcamentoSection';
 import { RelatoriosSection } from './pages/RelatoriosSection';
 import { CadastroClienteSection } from './pages/CadastroClienteSection';
-import { NovaEntradaModal } from './components/modals/NovaEntradaModal';
-import { NovaSaidaModal } from './components/modals/NovaSaidaModal';
+import { EntryModal } from './components/modals/EntryModal';
+import { ExpensesModal } from './components/modals/ExpensesModal';
 import { RelatorioRapidoModal } from './components/modals/RelatorioRapidoModal';
 import { useEntries} from "./hooks/useEntries"
 import { useExpenses } from './hooks/useExpenses';
-import {usePayables} from "./hooks/usePayables"
+import {usePayable} from "./hooks/usePayables"
 import {useReceivables} from "./hooks/useReceivables"
 import {useClients} from "./hooks/useClients"
 import {useUser} from "./hooks/useUser"
 import { UserModal } from './components/modals/ConfigModal';
+import { PayableModal } from './components/modals/PayablesModal';
+import { Projetos2DSection } from './pages/Projetos2DSection';
+import { useProject } from './hooks/useProject'
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState<NavigationTab>('entradas');
@@ -30,21 +33,23 @@ export default function App() {
   
   const {
   entries,
-  addEntry,
-  deleteEntry,
-  updateEntryStatus
+  loadEntry,
+  deleteEntryId,
+  saveEntries
   } = useEntries();
   const{
     expenses, 
-    addExpense,
-    deleteExpense,
-    updateExpenseStatus
+    loadExpenses,
+    deleteExpenseId,
+    saveExpense
   } = useExpenses()
   const {
-    payables,
-    deletePayable,
-    updatePayableStatus
-  } = usePayables()
+    payable,
+    deletePayableId,
+    savePayable,
+    loadPayable,
+    updateStatus
+  } = usePayable()
   const {
     receivables,
     deleteReceivable,
@@ -61,19 +66,26 @@ export default function App() {
     loading,
     user
   } = useUser()
+  const {
+    loadProject,
+    saveProject,
+    project,
+    deleteProjectId,
+    editProject
+  } = useProject()
 
   const filteredEntries = entries.filter(
-    entry => !search || entry.descricao.toLowerCase().includes(search) ||
-      entry.cliente.toLowerCase().includes(search)
+    entry => !search || entry.description.toLowerCase().includes(search)// ||
+      //entry.cliente_id.toLowerCase().includes(search)
   );
 
   const filteredExpenses = expenses.filter(
-    expense =>!search || expense.fornecedor.toLowerCase().includes(search) ||
-      expense.obs.toLowerCase().includes(search)
+    expense =>!search || expense.supplier.toLowerCase().includes(search) ||
+      expense.observations.toLowerCase().includes(search)
   );
 
-  const filteredPayables = payables.filter(
-    payable => !search || payable.fornecedor.toLowerCase().includes(search)
+  const filteredPayables = payable.filter(
+    payables => !search || payables.supplier.toLowerCase().includes(search)
   );
 
   const filteredReceivables = receivables.filter(
@@ -84,10 +96,10 @@ export default function App() {
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
   const [isNewEntryOpen, setIsNewEntryOpen] = useState(false);
   const [isNewExpenseOpen, setIsNewExpenseOpen] = useState(false);
+  const [isNewPayableOpen, setIsNewPayableOpen] = useState(false);
   const [isQuickReportOpen, setIsQuickReportOpen] = useState(false);
 
-  const totalRecebido = entries.filter(e => e.status === 'Recebido').reduce((a, b) => a + b.valor, 0);
-  const totalGasto = expenses.filter(e => e.status === 'Pago').reduce((a, b) => a + b.valor, 0);
+  const totalGasto = 0 //expenses.filter(e => e.status === 'Pago').reduce((a, b) => a + b.valor, 0);
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-800 flex flex-row antialiased selection:bg-[#003d9b] selection:text-white">
@@ -97,6 +109,7 @@ export default function App() {
         onSelectTab={setCurrentTab}
         onOpenNewEntry={() => setIsNewEntryOpen(true)}
         onOpenConfig={() => setIsUserModalOpen(true)}
+        user={user}
       />
 
       {/* Main Content Area */}
@@ -105,46 +118,47 @@ export default function App() {
         <Header
           onOpenQuickReport={() => setIsQuickReportOpen(true)}
           onOpenConfig={() => setIsUserModalOpen(true)}
+          user={user}
         />
 
         {/* Dynamic View Router */}
         <main className="flex-1 pb-16">
-          {currentTab === 'dashboard' && (
+          {/* {currentTab === 'dashboard' && (
             <DashboardSection
               entries={entries}
               expenses={expenses}
-              payables={payables}
+              //payables={payable}
               receivables={receivables}
               onNavigate={setCurrentTab}
               onOpenNewEntry={() => setIsNewEntryOpen(true)}
               onOpenNewExpense={() => setIsNewExpenseOpen(true)}
             />
-          )}
+          )} */}
 
           {currentTab === 'entradas' && (
             <EntradasSection
-              entries={filteredEntries}
+              entries={entries}
               onOpenNewEntry={() => setIsNewEntryOpen(true)}
-              onDeleteEntry={deleteEntry}
-              onUpdateStatus={updateEntryStatus}
+              onDeleteEntry={deleteEntryId}
+              user={user}
             />
           )}
 
           {currentTab === 'saidas' && (
-            <SaidasSection
+            <ExpensesSection
               expenses={filteredExpenses}
               onOpenNewExpense={() => setIsNewExpenseOpen(true)}
-              onDeleteExpense={deleteExpense}
-              onUpdateStatus={updateExpenseStatus}
+              onDeleteExpense={deleteExpenseId}
+              user={user}
             />
           )}
 
           {currentTab === 'contas-pagar' && (
-            <ContasPagarSection
-              payables={ filteredPayables }
-              onOpenNewPayable={() => setIsNewExpenseOpen(true)}
-              onDeletePayable={deletePayable}
-              onUpdateStatus={updatePayableStatus}
+            <AccountPayableSection
+              payables={ payable }
+              onOpenNewPayable={() => setIsNewPayableOpen(true)}
+              onDeletePayable={deletePayableId}
+              onUpdateStatus={updateStatus}
             />
           )}
 
@@ -161,6 +175,17 @@ export default function App() {
           {currentTab === 'orcamento' && (
             <OrcamentoSection
               budgetItems={initialBudgetItems}
+            />
+          )}
+
+          { currentTab === 'projetos' && (
+            <Projetos2DSection
+            clients={clients}
+            project={project}
+            onAddProject={saveProject}
+            onDeleteProject={deleteProjectId}
+            loadProject={loadProject}
+            updateProject={editProject}
             />
           )}
 
@@ -183,26 +208,37 @@ export default function App() {
       <UserModal
         isOpen={isUserModalOpen}
         onClose={() => setIsUserModalOpen(false)}
-        user={user} 
+        user={user}
         onUpdate={saveUser}
       />
 
-      <NovaEntradaModal
+      {user && (<EntryModal
         isOpen={isNewEntryOpen}
         onClose={() => setIsNewEntryOpen(false)}
-        onAddEntry={addEntry}
-      />
+        onAddEntry={saveEntries}
+        user={user}
+        client={clients}
+      />)}
 
-      <NovaSaidaModal
+      <ExpensesModal
         isOpen={isNewExpenseOpen}
         onClose={() => setIsNewExpenseOpen(false)}
-        onAddExpense={addExpense}
+        onAddExpense={saveExpense}
+        user={user}
+      />
+
+      <PayableModal
+      isOpen = {isNewPayableOpen}
+      onClose={() => setIsNewPayableOpen(false)}
+      onAddPayable={savePayable}
+      user={user}
+      
       />
 
       <RelatorioRapidoModal
         isOpen={isQuickReportOpen}
         onClose={() => setIsQuickReportOpen(false)}
-        totalRecebido={totalRecebido}
+    
         totalGasto={totalGasto}
       />
 
