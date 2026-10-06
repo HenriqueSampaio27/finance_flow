@@ -4,7 +4,6 @@ export type NavigationTab =
   | 'saidas'
   | 'contas-pagar'
   | 'contas-receber'
-  | 'orcamento'
   | 'relatorios'
   | 'projetos'
   | 'cadastro-cliente';

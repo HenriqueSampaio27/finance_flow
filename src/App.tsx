@@ -7,8 +7,7 @@ import { DashboardSection } from './pages/DashboardSection';
 import { EntradasSection } from './pages/EntrySection';
 import { ExpensesSection } from './pages/ExpensesSection';
 import { AccountPayableSection } from './pages/AccountPayableSection';
-import { ContasReceberSection } from './pages/ContasReceberSection';
-import { OrcamentoSection } from './pages/OrcamentoSection';
+import { AccountReceivableSection } from './pages/AccountReceivableSection';
 import { RelatoriosSection } from './pages/RelatoriosSection';
 import { CadastroClienteSection } from './pages/CadastroClienteSection';
 import { EntryModal } from './components/modals/EntryModal';
@@ -17,13 +16,14 @@ import { RelatorioRapidoModal } from './components/modals/RelatorioRapidoModal';
 import { useEntries} from "./hooks/useEntries"
 import { useExpenses } from './hooks/useExpenses';
 import {usePayable} from "./hooks/usePayables"
-import {useReceivables} from "./hooks/useReceivables"
 import {useClients} from "./hooks/useClients"
 import {useUser} from "./hooks/useUser"
+import {useReceivables} from "./hooks/useReceivable"
 import { UserModal } from './components/modals/ConfigModal';
 import { PayableModal } from './components/modals/PayablesModal';
 import { Projetos2DSection } from './pages/Projetos2DSection';
 import { useProject } from './hooks/useProject'
+import { ReceivableModal } from './components/modals/ReceivableModal';
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState<NavigationTab>('entradas');
@@ -52,8 +52,11 @@ export default function App() {
   } = usePayable()
   const {
     receivables,
-    deleteReceivable,
-    updateReceivableStatus
+    deleteReceivableId,
+    loadReceivable,
+    saveReceivables,
+    handleUpdateReceivable,
+    payReceivable
   } = useReceivables()
   const {
     saveClient,
@@ -88,9 +91,9 @@ export default function App() {
     payables => !search || payables.supplier.toLowerCase().includes(search)
   );
 
-  const filteredReceivables = receivables.filter(
-    receivable => !search || receivable.cliente.toLowerCase().includes(search)
-  );
+  //const filteredReceivables = receivables.filter(
+  //  receivable => !search || receivable.cliente.toLowerCase().includes(search)
+  //);
 
   // Modals state
   const [isUserModalOpen, setIsUserModalOpen] = useState(false);
@@ -98,6 +101,7 @@ export default function App() {
   const [isNewExpenseOpen, setIsNewExpenseOpen] = useState(false);
   const [isNewPayableOpen, setIsNewPayableOpen] = useState(false);
   const [isQuickReportOpen, setIsQuickReportOpen] = useState(false);
+  const [isNewReceivableOpen, setIsNewReceivableOpen] = useState(false);
 
   const totalGasto = 0 //expenses.filter(e => e.status === 'Pago').reduce((a, b) => a + b.valor, 0);
 
@@ -163,18 +167,14 @@ export default function App() {
           )}
 
           {currentTab === 'contas-receber' && (
-            <ContasReceberSection
-              receivables={ filteredReceivables
-              }
-              onOpenNewReceivable={() => setIsNewEntryOpen(true)}
-              onDeleteReceivable={deleteReceivable}
-              onUpdateStatus={updateReceivableStatus}
-            />
-          )}
-
-          {currentTab === 'orcamento' && (
-            <OrcamentoSection
-              budgetItems={initialBudgetItems}
+            <AccountReceivableSection
+              receivables={receivables}
+              onOpenNewReceivable={() => setIsNewReceivableOpen(true)}
+              onDeleteReceivable={deleteReceivableId}
+              onUpdateStatus={payReceivable}
+              clients={clients}
+              user={user}
+              onEntryCreated={loadEntry}
             />
           )}
 
@@ -186,6 +186,7 @@ export default function App() {
             onDeleteProject={deleteProjectId}
             loadProject={loadProject}
             updateProject={editProject}
+            userName={user}
             />
           )}
 
@@ -220,6 +221,13 @@ export default function App() {
         client={clients}
       />)}
 
+      <ReceivableModal
+        isOpen={isNewReceivableOpen}
+        onClose={() => setIsNewReceivableOpen(false)}
+        onAddReceivable={saveReceivables}
+        client={clients}
+      />
+
       <ExpensesModal
         isOpen={isNewExpenseOpen}
         onClose={() => setIsNewExpenseOpen(false)}
@@ -232,13 +240,11 @@ export default function App() {
       onClose={() => setIsNewPayableOpen(false)}
       onAddPayable={savePayable}
       user={user}
-      
       />
 
       <RelatorioRapidoModal
         isOpen={isQuickReportOpen}
         onClose={() => setIsQuickReportOpen(false)}
-    
         totalGasto={totalGasto}
       />
 

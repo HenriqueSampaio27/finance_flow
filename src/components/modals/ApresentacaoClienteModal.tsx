@@ -18,19 +18,22 @@ import { formatCurrency } from '../../utils/formatters';
 import { title } from '@/src/types/titleFinanceFlow';
 import { ClientItem } from '@/src/types';
 import { gerarProjetoPDF } from '../projetos2D/PdfProjeto2D';
+import { UserType } from '@/src/types/userType';
 
 interface ApresentacaoClienteModalProps {
   isOpen: boolean;
   client? : ClientItem;
   onClose: () => void;
   projeto: Projeto2D;
+  userName?: UserType | null
 }
 
 export const ApresentacaoClienteModal: React.FC<ApresentacaoClienteModalProps> = ({
   isOpen,
   onClose,
   projeto,
-  client
+  client,
+  userName
 }) => {
   if (!isOpen) return null;
 
@@ -91,7 +94,8 @@ export const ApresentacaoClienteModal: React.FC<ApresentacaoClienteModalProps> =
                 gerarProjetoPDF({
                   projeto,
                   client,
-                  modo: 'open'
+                  modo: 'open',
+                  user: userName
                 })
               }
               className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 rounded-lg shadow-2xs transition-colors cursor-pointer"

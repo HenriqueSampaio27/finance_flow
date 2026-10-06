@@ -6,7 +6,8 @@ import { ClientItem } from '@/src/types';
 import { title as EMPRESA_PADRAO } from '@/src/types/titleFinanceFlow';
 import { formatCurrency } from '../../utils/formatters';
 import { Estrutura2DRenderer } from './Estrutura2DRenderer';
-import { useUser } from '@/src/hooks/useUser';
+
+import { UserType } from '@/src/types/userType';
 
 /* -------------------------------------------------------------------------- */
 /*  Tipos                                                                      */
@@ -15,6 +16,7 @@ import { useUser } from '@/src/hooks/useUser';
 interface GerarProjetoPDFParams {
   projeto: Projeto2D;
   client?: ClientItem;
+  user?: UserType | null;
   empresaNome?: string;
   modo?: 'download' | 'open';
 }
@@ -50,15 +52,6 @@ const hexToRgb = (hex: string): RGB => {
     parseInt(h.substring(4, 6), 16),
   ];
 };
-
-
-/* -------------------------------------------------------------------------- */
-/*  User                                                                     */
-/* -------------------------------------------------------------------------- */
-const {
-    user
-  } = useUser()
-
 
 /* -------------------------------------------------------------------------- */
 /*  Labels                                                                     */
@@ -229,6 +222,7 @@ export const gerarProjetoPDF = async ({
   client,
   empresaNome,
   modo,
+  user,
 }: GerarProjetoPDFParams): Promise<void> => {
   const empresa = empresaNome || String(EMPRESA_PADRAO || 'Raynex Solutions');
 

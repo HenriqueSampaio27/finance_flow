@@ -39,6 +39,7 @@ import { modelosPorTipo } from '../../types/projetos2d';
 import { Estrutura2DRenderer } from '../projetos2D/Estrutura2DRenderer';
 import { ApresentacaoClienteModal } from './ApresentacaoClienteModal';
 import { gerarProjetoPDF } from '../projetos2D/PdfProjeto2D';
+import { UserType } from '@/src/types/userType';
 
 
 interface SettingProjectModal{
@@ -46,13 +47,15 @@ interface SettingProjectModal{
     project: Projeto2D;
     onSave: (projeto: Projeto2D) => void;
     onClose: () => void;
+    userName?: UserType | null
 }
 
 export const SettingProjectModal: React.FC<SettingProjectModal> = ({
     clients = [],
     project,
     onSave,
-    onClose
+    onClose,
+    userName
 }) => {
     
       // Editor View State: null means gallery list, non-null means editing/creating that project
@@ -131,6 +134,7 @@ export const SettingProjectModal: React.FC<SettingProjectModal> = ({
           projeto: editingProjeto,
           client: clienteProjeto,
           modo: 'download',
+          user: userName
         });
       };
     
@@ -780,6 +784,7 @@ export const SettingProjectModal: React.FC<SettingProjectModal> = ({
             )}
             onClose={() => setPresentationProjeto(null)}
             projeto={presentationProjeto}
+            userName={userName}
         />
         )}
     </div>

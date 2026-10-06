@@ -2,7 +2,7 @@ export const receivablesTheme = {
   header: {
     title: 'Contas a Receber',
     subtitle: 'Gestão de recebíveis e acompanhamento de inadimplência.',
-    actionLabel: '+ Nova Entrada',
+    actionLabel: 'Conta a Receber',
   },
   kpis: {
     total: {

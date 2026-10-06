@@ -37,7 +37,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
     { id: 'saidas' as NavigationTab, label: 'Saídas', icon: ArrowUpRight },
     { id: 'contas-pagar' as NavigationTab, label: 'Contas a Pagar', icon: CalendarDays },
     { id: 'contas-receber' as NavigationTab, label: 'Contas a Receber', icon: Receipt },
-    { id: 'orcamento' as NavigationTab, label: 'Orçamento', icon: TrendingUp },
     { id: 'projetos' as NavigationTab, label: 'Projeto', icon: TrendingUp },
     { id: 'relatorios' as NavigationTab, label: 'Relatórios', icon: BarChart3 },
     { id: 'cadastro-cliente' as NavigationTab, label: 'Cadastro de Cliente', icon: UserPlus },

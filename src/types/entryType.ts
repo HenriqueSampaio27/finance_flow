@@ -10,4 +10,5 @@ export interface EntryItem {
   destination_account: string;
   installment: string
   fee: number;
+  receivable_id?: number | null;
 }

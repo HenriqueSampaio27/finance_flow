@@ -26,6 +26,7 @@ import { ApresentacaoClienteModal } from '../components/modals/ApresentacaoClien
 import { formatCurrency } from '../utils/formatters';
 import { SettingProjectModal } from '../components/modals/SettingProjectModal';
 import Swal from 'sweetalert2';
+import { UserType } from '../types/userType';
 
 interface Projetos2DSectionProps {
   clients?: ClientItem[];
@@ -34,6 +35,7 @@ interface Projetos2DSectionProps {
   onAddProject: (project: Projeto2D) => void;
   updateProject: (id: string, projectEdit: Projeto2D) => void;
   loadProject: () => void;
+  userName?: UserType | null
 }
 
 export const Projetos2DSection: React.FC<Projetos2DSectionProps> = ({ 
@@ -42,7 +44,8 @@ export const Projetos2DSection: React.FC<Projetos2DSectionProps> = ({
   onDeleteProject,
   onAddProject,
   loadProject,
-  updateProject
+  updateProject,
+  userName
  }) => {
   
   // Collection of projects
@@ -494,6 +497,7 @@ export const Projetos2DSection: React.FC<Projetos2DSectionProps> = ({
           }
           onClose={() => setPresentationProjeto(null)}
           projeto={presentationProjeto}
+          userName={userName}
         />
       )}
       
@@ -514,6 +518,7 @@ export const Projetos2DSection: React.FC<Projetos2DSectionProps> = ({
             }
 
           }}
+          userName={userName}
         />
       )}
     </div>
