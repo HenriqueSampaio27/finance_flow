@@ -284,7 +284,9 @@ export const ExpensesSection: React.FC<ExpensesSectionProps> = ({
                       {formatCurrency(item.amount)}
                     </span>
                   </td>
-                  <td className="py-4 px-4 text-xs text-slate-500 whitespace-nowrap max-w-[150px] truncate">
+                  <td 
+                  title= {item.observations}
+                  className="py-4 px-4 text-xs text-slate-500 whitespace-nowrap max-w-[150px] truncate">
                     {item.observations}
                   </td>
                   <td className="py-4 px-10 text-xs text-slate-500 whitespace-nowrap">

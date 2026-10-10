@@ -7,4 +7,5 @@ export interface ExpenseItem {
   outgoing_account: string;
   observations: string;
   installment: string;
+  id_account_payable?: number;
 }

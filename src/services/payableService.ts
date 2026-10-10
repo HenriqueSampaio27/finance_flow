@@ -24,9 +24,10 @@ export async function createPayable(
   });
 }
 
-export async function updatePayableStatus(
+export async function registerPayablePayment(
   id: number,
-  status: string
+  receipt: string, 
+  account: string
 ): Promise<{
   message: string;
   payable: PayableItem;
@@ -36,7 +37,10 @@ export async function updatePayableStatus(
     payable: PayableItem;
   }>(`/payable/${id}`, {
     method: "PUT",
-    body: JSON.stringify({ status }),
+    body: JSON.stringify({
+        receipt,
+        account,
+      }),
   });
 }
 

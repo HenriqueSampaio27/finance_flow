@@ -90,30 +90,49 @@ function getById(id) {
     .get(id);
 }
 
-function updateStatus(id, status) {
+function registerPayment(id, receipt, account) {
+  const transaction = db.transaction(() => {
 
-  const payable = getById(id);
+    // 1. BUSCAR CONTA A PAGAR
+    const payable = db.prepare(`
+      SELECT *
+      FROM accounts_payable
+      WHERE id = ?
+    `).get(id);
 
-  if (!payable) {
-    return null;
-  }
+    if (!payable) {
+      throw new Error("Conta a pagar não encontrada.");
+    }
 
-  const result = db.prepare(`
-    UPDATE accounts_payable
-    SET status = ?
-    WHERE id = ?
-  `).run(status, id);
+    // 2. VALIDAR STATUS
+    if (payable.status === "Pago") {
+      throw new Error("Esta conta já foi paga.");
+    }
 
-  if (result.changes === 0) {
-    return null;
-  }
+    // 3. VALIDAR VALOR
+    const amount = Number(payable.amount);
 
-  // Só cria a saída quando a conta
-  // realmente muda para Pago
-  if (status === "Pago" && payable.status !== "Pago") {
+    if (!Number.isFinite(amount) || amount <= 0) {
+      throw new Error("O valor da conta deve ser maior que zero.");
+    }
 
-    const installment = `${payable.installment_number}/${payable.installment_total}`;
+    // 4. ATUALIZAR STATUS
+    const result = db.prepare(`
+      UPDATE accounts_payable
+      SET status = ?
+      WHERE id = ?
+        AND status != ?
+    `).run("Pago", id, "Pago");
 
+    if (result.changes !== 1) {
+      throw new Error("Não foi possível atualizar o status da conta.");
+    }
+
+    // 5. FORMATAR PARCELA
+    const installment =
+      `${payable.installment_number}/${payable.installment_total}`;
+
+    // 6. REGISTRAR SAÍDA
     db.prepare(`
       INSERT INTO expenses (
         date,
@@ -122,21 +141,31 @@ function updateStatus(id, status) {
         category,
         outgoing_account,
         observations,
-        installment
+        installment,
+        id_account_payment
       )
-      VALUES (?, ?, ?, ?, ?, ?, ?)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
-      payable.date,
-      payable.amount,
+      new Date().toISOString().split("T")[0],
+      amount,
       payable.supplier,
       payable.category,
-      payable.outgoing_account,
-      payable.observation,
-      installment
+      account,
+      `Pagamento da conta #${id}, pelo ${receipt}`,
+      installment,
+      id
     );
-  }
 
-  return getById(id);
+    // 7. RETORNAR CONTA ATUALIZADA
+    return db.prepare(`
+      SELECT *
+      FROM accounts_payable
+      WHERE id = ?
+    `).get(id);
+
+  });
+
+  return transaction();
 }
 
 function remove(id) {
@@ -151,7 +180,7 @@ module.exports = {
   create,
   getAll,
   getById,
-  updateStatus, 
+  registerPayment, 
   remove
 };
 

@@ -1,4 +1,4 @@
-export type StatusRecebimento = 'received' | 'pending' | 'late' | 'canceled' | 'partial' | 'paid';
+export type StatusRecebimento = 'received' | 'pending' | 'late'  | 'partial' | 'paid';
 
 export interface ReceivableItem {
   id: number;

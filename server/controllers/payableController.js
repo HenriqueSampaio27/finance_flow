@@ -83,18 +83,15 @@ async function getById(req, res) {
 }
 
 // ALTERAR STATUS
-async function updateStatus(req, res) {
+async function registerPaymentStatus(req, res) {
   try {
     const { id } = req.params;
-    const { status } = req.body;
+    const {
+      receipt,
+      account
+    } = req.body;
 
-    if (!status) {
-      return res.status(400).json({
-        message: "O status é obrigatório"
-      });
-    }
-
-    const payable = payableService.updateStatus(id, status);
+    const payable = payableService.registerPayment(id, receipt, account);
 
     if (!payable) {
       return res.status(404).json({
@@ -102,16 +99,33 @@ async function updateStatus(req, res) {
       });
     }
 
-    res.json({
-      message: "Status atualizado com sucesso",
+    return res.json({
+      message: "Conta paga com sucesso e saída registrada",
       payable
     });
 
   } catch (error) {
-    console.error("Erro ao atualizar status:", error);
+    console.error("Erro ao registrar pagamento:", error);
 
-    res.status(500).json({
-      message: "Erro ao atualizar status"
+    if (
+      error.message === "Conta a pagar não encontrada."
+    ) {
+      return res.status(404).json({
+        message: error.message
+      });
+    }
+
+    if (
+      error.message === "Esta conta já foi paga." ||
+      error.message === "O valor da conta deve ser maior que zero."
+    ) {
+      return res.status(400).json({
+        message: error.message
+      });
+    }
+
+    return res.status(500).json({
+      message: "Erro ao registrar pagamento"
     });
   }
 }
@@ -145,6 +159,6 @@ module.exports = {
   create,
   getAll,
   getById,
-  updateStatus,
+  registerPaymentStatus,
   remove
 };

@@ -26,8 +26,9 @@ interface AccountPayableSectionProps {
   payables: PayableItem[];
   onOpenNewPayable: () => void;
   onDeletePayable: (id: number) => void;
-  onUpdateStatus: (id: number, status: string, outgoingAccount?: string) => void | Promise<void>;
+  onUpdateStatus: (id: number, receipt: string, account: string) => void;
   user?: UserType | undefined | null;
+  onExpensePayable: () => Promise<void>;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -92,6 +93,7 @@ export const AccountPayableSection: React.FC<AccountPayableSectionProps> = ({
   onDeletePayable,
   onUpdateStatus,
   user,
+  onExpensePayable
 }) => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<FiltroStatus>('all');
@@ -104,6 +106,7 @@ export const AccountPayableSection: React.FC<AccountPayableSectionProps> = ({
   const [deleteItem, setDeleteItem] = useState<PayableItem | null>(null);
   const [paymentItem, setPaymentItem] = useState<PayableItem | null>(null);
   const [paymentAccount, setPaymentAccount] = useState('');
+  const [paymentReceipt, setPaymentReceipt] = useState("PIX");
   const [paying, setPaying] = useState(false);
 
   const hoje = hojeISO();
@@ -127,11 +130,6 @@ export const AccountPayableSection: React.FC<AccountPayableSectionProps> = ({
     [payables]
   );
 
-  const accounts = useMemo(
-    () => [...new Set(payables.map((p) => p.outgoing_account).filter(Boolean))] as string[],
-    [payables]
-  );
-
   /* ------------------------------- filtros -------------------------------- */
 
   const filtered = useMemo(() => {
@@ -141,7 +139,6 @@ export const AccountPayableSection: React.FC<AccountPayableSectionProps> = ({
       .filter((item) => {
         if (statusFilter !== 'all' && item.statusEfetivo !== statusFilter) return false;
         if (categoryFilter !== 'all' && item.category !== categoryFilter) return false;
-        if (accountFilter !== 'all' && item.outgoing_account !== accountFilter) return false;
         if (termo && !String(item.supplier ?? '').toLowerCase().includes(termo)) return false;
 
         const venc = String(item.date).slice(0, 10);
@@ -191,10 +188,10 @@ export const AccountPayableSection: React.FC<AccountPayableSectionProps> = ({
   /* -------------------------------- KPIs ---------------------------------- */
 
   const kpis = useMemo(() => {
-    const abertos = items.filter((i) => i.statusEfetivo !== 'Pago');
-    const vencidos = items.filter((i) => i.statusEfetivo === 'Vencido');
-    const pagos = items.filter((i) => i.statusEfetivo === 'Pago');
-    const soma = (list: typeof items) => list.reduce((acc, i) => acc + Number(i.amount || 0), 0);
+    const abertos = filtered.filter((i) => i.statusEfetivo !== 'Pago');
+    const vencidos = filtered.filter((i) => i.statusEfetivo === 'Vencido');
+    const pagos = filtered.filter((i) => i.statusEfetivo === 'Pago');
+    const soma = (list: typeof filtered) => list.reduce((acc, i) => acc + Number(i.amount || 0), 0);
 
     return {
       totalAPagar: soma(abertos),
@@ -204,21 +201,23 @@ export const AccountPayableSection: React.FC<AccountPayableSectionProps> = ({
       pago: soma(pagos),
       titulosPagos: pagos.length,
     };
-  }, [items]);
+  }, [filtered]);
 
   /* ------------------------------- ações ---------------------------------- */
 
   const handlePayment = (item: PayableItem) => {
     setPaymentItem(item);
-    setPaymentAccount(item.outgoing_account || bankAccounts[0] || 'Caixa Interno');
+    setPaymentAccount(bankAccounts[0] || 'Caixa Interno');
   };
 
   const handleConfirmPayment = async () => {
     if (!paymentItem?.id || paying) return;
     try {
       setPaying(true);
-      await onUpdateStatus(paymentItem.id, 'Pago', paymentAccount);
+      await onUpdateStatus(paymentItem.id, paymentAccount, paymentReceipt);
       setPaymentItem(null);
+
+      await onExpensePayable();
     } catch (error) {
       console.error(error);
     } finally {
@@ -230,9 +229,6 @@ export const AccountPayableSection: React.FC<AccountPayableSectionProps> = ({
     'w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-1.5 text-xs text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#003d9b]/20 focus:border-[#003d9b]/40';
 
   const labelBase = 'block text-[11px] font-semibold text-slate-500 uppercase mb-1';
-
-  // Contas disponíveis no modal de pagamento (sem duplicar)
-  const contasPagamento = [...new Set([...bankAccounts, 'Caixa Interno'])];
 
   /* -------------------------------- render -------------------------------- */
 
@@ -341,22 +337,6 @@ export const AccountPayableSection: React.FC<AccountPayableSectionProps> = ({
           </div>
 
           <div>
-            <label className={labelBase}>Conta de Saída</label>
-            <select
-              value={accountFilter}
-              onChange={(e) => setAccountFilter(e.target.value)}
-              className={`${inputBase} font-medium`}
-            >
-              <option value="all">Todas</option>
-              {accounts.map((a) => (
-                <option key={a} value={a}>
-                  {a}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div>
             <label className={labelBase}>Vencimento (De)</label>
             <input
               type="date"
@@ -400,7 +380,6 @@ export const AccountPayableSection: React.FC<AccountPayableSectionProps> = ({
                 <th className={typography.table.header}>VENCIMENTO</th>
                 <th className={`${typography.table.header} text-right`}>VALOR</th>
                 <th className={`${typography.table.header} text-center`}>CATEGORIA</th>
-                <th className={`${typography.table.header} text-center`}>CONTA SAÍDA</th>
                 <th className={`${typography.table.header} text-center`}>PARCELA</th>
                 <th className={`${typography.table.header} text-center`}>STATUS</th>
                 <th className={`${typography.table.header} text-center`}>AÇÕES</th>
@@ -468,9 +447,7 @@ export const AccountPayableSection: React.FC<AccountPayableSectionProps> = ({
                     <td className="py-4 px-4 text-center text-xs text-slate-600 font-medium whitespace-nowrap">
                       {item.category}
                     </td>
-                    <td className="py-4 px-4 text-center text-xs text-slate-600 font-medium whitespace-nowrap">
-                      {item.outgoing_account}
-                    </td>
+                  
                     <td className="py-4 px-4 text-center text-xs text-slate-600 font-medium whitespace-nowrap">
                       {item.installment_number}/{item.installment_total}
                     </td>
@@ -646,87 +623,207 @@ export const AccountPayableSection: React.FC<AccountPayableSectionProps> = ({
       )}
 
       {/* ------------------------ Modal: pagamento ------------------------ */}
+      
       {paymentItem && (
-        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
-            <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
-                  <DollarSign className="w-5 h-5" />
+              <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+      
+                <div className="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl border border-slate-200">
+      
+                  {/* HEADER */}
+                  <div className="flex items-center justify-between pb-4 border-b border-slate-100 mb-5">
+      
+                    <div className="flex items-center gap-3">
+      
+                      <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+                        <DollarSign className="w-5 h-5" />
+                      </div>
+      
+                      <div>
+
+                        <h3 className="text-base font-bold text-slate-900">Confirmar pagamento</h3>
+                        
+                        <p className="text-xs text-slate-400">Registre a saída desta conta.</p>
+                      </div>
+      
+                    </div>
+      
+                    <button
+                      type="button"
+                      onClick={() => setPaymentItem(null)}
+                      className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+      
+                  </div>
+      
+      
+                  {/* INFORMAÇÕES DA CONTA */}
+                  <div className="bg-slate-50 rounded-xl p-4 mb-5">
+      
+                    <div className="grid grid-cols-2 gap-4">
+      
+                      <div>
+                        <p className="text-xs text-slate-400">
+                          Fornecedor
+                        </p>
+      
+                        <p className="text-sm font-semibold text-slate-800">
+                          {paymentItem.supplier || "Sem fornecedor"}
+                        </p>
+                      </div>
+      
+                      <div>
+                        <p className="text-xs text-slate-400">
+                          Parcela
+                        </p>
+      
+                        <p className="text-sm font-semibold text-slate-800">
+                          {paymentItem.installment_number}/{paymentItem.installment_total}
+                        </p>
+                      </div>
+      
+                      <div>
+                        <p className="text-xs text-slate-400">
+                          Valor
+                        </p>
+      
+                        <p className="text-sm font-semibold text-slate-800">
+                          {Number(paymentItem.amount).toLocaleString(
+                            "pt-BR",
+                            {
+                              style: "currency",
+                              currency: "BRL",
+                            }
+                          )}
+                        </p>
+                      </div>
+
+                      <div>
+                        <p className="text-xs text-slate-400">
+                          Vencimento
+                        </p>
+      
+                        <p className="text-sm font-semibold text-slate-800">
+                          {paymentItem.date}
+                        </p>
+                      </div>
+      
+                    </div>
+      
+                  </div>
+      
+                  {/* RECEBIMENTO */}
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+      
+                    <div>
+      
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">
+                        Pagamento
+                      </label>
+      
+                      <select
+                        value={paymentReceipt}
+                        onChange={(e) =>
+                          setPaymentReceipt(e.target.value)
+                        }
+                        className={styles.input}
+                      >
+      
+                        <option value="PIX">
+                          PIX
+                        </option>
+      
+                        <option value="Boleto Bancário">
+                          Boleto Bancário
+                        </option>
+      
+                        <option value="Cartão de Crédito">
+                          Cartão de Crédito
+                        </option>
+      
+                        <option value="Cartão de Débito">
+                          Cartão de Débito
+                        </option>
+      
+                        <option value="Espécie">
+                          Espécie
+                        </option>
+      
+                      </select>
+      
+                    </div>
+      
+      
+                    {/* CONTA */}
+                    <div>
+      
+                      <label className="block text-xs font-semibold text-slate-600 mb-1">
+                        Conta de saída
+                      </label>
+      
+                      <select
+                        value={paymentAccount}
+                        onChange={(e) =>
+                          setPaymentAccount(
+                            e.target.value
+                          )
+                        }
+                        className={styles.input}
+                      >
+      
+                        {bankAccounts.map(
+                          (account, index) => (
+                            <option
+                              key={index}
+                              value={account}
+                            >
+                              {account}
+                            </option>
+                          )
+                        )}
+      
+                        <option value="Caixa Interno">
+                          Caixa Interno
+                        </option>
+      
+                      </select>
+      
+                    </div>
+      
+                  </div>
+      
+                  {/* BOTÕES */}
+                  <div className="pt-4 border-t border-slate-100 flex justify-end gap-3">
+      
+                    <button
+                      type="button"
+                      onClick={() => setPaymentItem(null)}
+                      className={styles.secondaryButton}
+                    >
+                      Cancelar
+                    </button>
+      
+                    <button
+                      type="button"
+                      onClick={handleConfirmPayment}
+                      // disabled={
+                      //   !paymentAmount ||
+                      //   Number(paymentAmount) <= 0 ||
+                      //   Number(Number(paymentAmount).toFixed(2)) > Number(Number(paymentItem.balance).toFixed(2))
+                        
+                      // }
+                      className={styles.primaryButton}
+                    >
+                      Confirmar pagamento
+                    </button>
+      
+                  </div>
+      
                 </div>
-                <div>
-                  <h3 className="text-base font-bold text-slate-900">Confirmar pagamento</h3>
-                  <p className="text-xs text-slate-400">Registre a saída desta conta.</p>
-                </div>
+      
               </div>
-              <button
-                type="button"
-                onClick={() => setPaymentItem(null)}
-                aria-label="Fechar"
-                className="text-slate-400 hover:text-slate-700 p-1.5 rounded-lg hover:bg-slate-100"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            </div>
-
-            <div className="bg-slate-50 rounded-xl p-4 mb-5">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-xs text-slate-400">Fornecedor</p>
-                  <p className="text-sm font-semibold text-slate-800">{paymentItem.supplier}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-slate-400">Parcela</p>
-                  <p className="text-sm font-semibold text-slate-800">
-                    {paymentItem.installment_number}/{paymentItem.installment_total}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-xs text-slate-400">Vencimento</p>
-                  <p className="text-sm font-semibold text-slate-800">{formatDate(paymentItem.date)}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-slate-400">Valor a pagar</p>
-                  <p className="text-sm font-bold text-emerald-600">{formatCurrency(paymentItem.amount)}</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="mb-5">
-              <label className="block text-xs font-semibold text-slate-600 mb-1">Conta de saída</label>
-              <select
-                value={paymentAccount}
-                onChange={(e) => setPaymentAccount(e.target.value)}
-                className={styles.input}
-              >
-                {/* Mantém a conta original do lançamento, mesmo que não esteja no cadastro do usuário */}
-                {paymentItem.outgoing_account && !contasPagamento.includes(paymentItem.outgoing_account) && (
-                  <option value={paymentItem.outgoing_account}>{paymentItem.outgoing_account}</option>
-                )}
-                {contasPagamento.map((account) => (
-                  <option key={account} value={account}>
-                    {account}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="pt-4 border-t border-slate-100 flex justify-end gap-3">
-              <button type="button" onClick={() => setPaymentItem(null)} className={styles.secondaryButton}>
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmPayment}
-                disabled={paying}
-                className={`${styles.primaryButton} disabled:opacity-60 disabled:cursor-not-allowed`}
-              >
-                {paying ? 'Salvando...' : 'Confirmar pagamento'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+            )}
     </div>
   );
 };

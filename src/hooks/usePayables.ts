@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"; 
 import {PayableItem} from '../types/payablesType'
-import { createPayable, getPayable, deletePayable, updatePayableStatus } from "../services/payableService";
+import { createPayable, getPayable, deletePayable, registerPayablePayment } from "../services/payableService";
 
 
 export function usePayable(){
@@ -66,27 +66,25 @@ export function usePayable(){
         }
     };
 
-    const updateStatus = async (
-        id: number,
-        status: string
-        ) => {
-        try {
-            const response = await updatePayableStatus(id, status);
 
-            setPayable((prev) =>
-            prev.map((item) =>
-                item.id === id
-                ? response.payable
-                : item
-            )
-            );
+    const registerPayment = async (id: number, receipt: string, account: string) => {
+    try {
+        const response = await registerPayablePayment(id, receipt, account);
 
-            return response;
-        } catch (error) {
-            console.error("Erro ao atualizar status da conta:", error);
-            throw error;
-        }
-        };
+        setPayable((prev) =>
+        prev.map((item) =>
+            item.id === id
+            ? response.payable
+            : item
+        )
+        );
+
+        return response;
+    } catch (error) {
+        console.error("Erro ao registrar pagamento da conta:", error);
+        throw error;
+    }
+    };
 
     useEffect(() => {
         loadPayable();
@@ -97,6 +95,6 @@ export function usePayable(){
         savePayable,
         deletePayableId,
         loadPayable,
-        updateStatus
+        registerPayment
     }
 }

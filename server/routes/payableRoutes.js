@@ -9,7 +9,7 @@ router.get("/", payableController.getAll);
 
 router.get("/:id", payableController.getById);
 
-router.put("/:id", payableController.updateStatus);
+router.put("/:id", payableController.registerPaymentStatus);
 
 router.delete("/:id", payableController.remove);
 

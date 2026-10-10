@@ -48,7 +48,7 @@ export default function App() {
     deletePayableId,
     savePayable,
     loadPayable,
-    updateStatus
+    registerPayment
   } = usePayable()
   const {
     receivables,
@@ -162,7 +162,9 @@ export default function App() {
               payables={ payable }
               onOpenNewPayable={() => setIsNewPayableOpen(true)}
               onDeletePayable={deletePayableId}
-              onUpdateStatus={updateStatus}
+              onUpdateStatus={registerPayment}
+              user={user}
+              onExpensePayable={loadExpenses}
             />
           )}
 

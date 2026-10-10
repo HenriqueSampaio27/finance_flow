@@ -52,10 +52,6 @@ const STATUS_CONFIG: Record<StatusRecebimento, { label: string; badge: string }>
     label: 'Atrasado',
     badge: 'bg-rose-50 text-rose-700 border-rose-200',
   },
-  canceled: {
-    label: 'Cancelado',
-    badge: 'bg-slate-100 text-slate-500 border-slate-200',
-  },
   partial: {
     label: 'Parcial',
     badge: 'bg-violet-50 text-violet-600 border-violet-200',
@@ -71,7 +67,6 @@ const FILTROS_STATUS: { value: FiltroStatus; label: string }[] = [
   { value: 'pending', label: 'Pendente' },
   { value: 'late', label: 'Atrasado' },
   { value: 'paid', label: 'Recebido' },
-  { value: 'canceled', label: 'Cancelado' },
   { value: 'partial', label: 'Parcial' },
 ];
 
@@ -235,19 +230,18 @@ export const AccountReceivableSection: React.FC<AccountReceivableSectionProps> =
   /* -------------------------------- KPIs ---------------------------------- */
 
   const kpis = useMemo(() => {
-    const ativos = items.filter((i) => i.statusEfetivo !== 'canceled');
-    const atrasados = ativos.filter((i) => i.statusEfetivo === 'late');
-    const quitados = ativos.filter((i) => i.statusEfetivo === 'received' || i.statusEfetivo === 'paid');
+    const atrasados = filtered.filter((i) => i.statusEfetivo === 'late');
+    const quitados = filtered.filter((i) => i.statusEfetivo === 'received' || i.statusEfetivo === 'paid');
 
     return {
-      totalAReceber: ativos.reduce((acc, i) => acc + i.balance, 0),
-      titulosEmAberto: ativos.filter((i) => i.balance > 0).length,
+      totalAReceber: filtered.reduce((acc, i) => acc + i.balance, 0),
+      titulosEmAberto: filtered.filter((i) => i.balance > 0).length,
       atrasado: atrasados.reduce((acc, i) => acc + i.balance, 0),
       titulosAtrasados: atrasados.length,
-      recebido: ativos.reduce((acc, i) => acc + i.received_amount, 0),
+      recebido: filtered.reduce((acc, i) => acc + i.received_amount, 0),
       titulosQuitados: quitados.length,
     };
-  }, [items]);
+  }, [filtered]);
 
   /* ------------------------------- ações ---------------------------------- */
 
@@ -500,7 +494,6 @@ export const AccountReceivableSection: React.FC<AccountReceivableSectionProps> =
               )}
 
               {paginated.map((item) => {
-                const cancelado = item.statusEfetivo === 'canceled';
                 const atrasado = item.statusEfetivo === 'late';
                 const quitado = item.statusEfetivo === 'received';
                 const percentual =
@@ -512,9 +505,7 @@ export const AccountReceivableSection: React.FC<AccountReceivableSectionProps> =
                 return (
                   <tr
                     key={item.id}
-                    className={`hover:bg-slate-50/80 transition-colors ${
-                      cancelado ? 'opacity-60 bg-slate-50/40' : ''
-                    }`}
+                    className={`hover:bg-slate-50/80 transition-color`}
                   >
                     <td className="py-4 px-4 text-xs font-semibold text-center text-slate-900 whitespace-nowrap">
                       {item.id}
@@ -531,9 +522,7 @@ export const AccountReceivableSection: React.FC<AccountReceivableSectionProps> =
                     <td className="py-4 px-4 text-xs font-semibold tabular-nums whitespace-nowrap">
                       <span
                         className={
-                          cancelado
-                            ? 'line-through text-slate-400'
-                            : atrasado
+                            atrasado
                             ? 'text-rose-600 font-bold'
                             : 'text-slate-800'
                         }
@@ -548,7 +537,7 @@ export const AccountReceivableSection: React.FC<AccountReceivableSectionProps> =
                       <span className="text-xs font-semibold text-slate-900 tabular-nums">
                         {formatCurrency(item.received_amount)}
                       </span>
-                      {!cancelado && item.original_amount > 0 && (
+                      {item.original_amount > 0 && (
                         <div
                           className="mt-1 ml-auto h-1 w-16 rounded-full bg-slate-100 overflow-hidden"
                           title={`${percentual}% recebido`}
@@ -563,7 +552,7 @@ export const AccountReceivableSection: React.FC<AccountReceivableSectionProps> =
                     <td className="py-4 px-4 text-right whitespace-nowrap">
                       <span
                         className={`text-xs font-bold tabular-nums ${
-                          item.balance <= 0 || cancelado
+                          item.balance <= 0
                             ? 'text-slate-400'
                             : atrasado
                             ? 'text-rose-600'

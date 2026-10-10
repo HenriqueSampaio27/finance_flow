@@ -4,7 +4,6 @@ export interface PayableItem {
   amount: number;
   supplier: string;
   category: string;
-  outgoing_account: string;
   observation: string;
   installment_number: number;
   installment_total: number;
