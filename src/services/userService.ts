@@ -1,3 +1,4 @@
+
 import { apiRequest } from "./apiRequest";
 import { UserType } from "../types/userType";
 
@@ -14,11 +15,8 @@ export async function updateUser(
   id: number,
   user: Omit<UserType, "id">
 ): Promise<UserResponse> {
-  return apiRequest<UserResponse>(
-    `/user/${id}`,
-    {
-      method: "PUT",
-      body: JSON.stringify(user),
-    }
-  );
+  return apiRequest<UserResponse>(`/user/${id}`, {
+    method: "PUT",
+    body: JSON.stringify(user),
+  });
 }

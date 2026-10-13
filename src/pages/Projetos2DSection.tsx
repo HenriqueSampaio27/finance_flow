@@ -4,15 +4,13 @@ import {
   Search,  
   Edit3, 
   Eye, 
-  Trash2, 
-  Copy,  
+  Trash2,  
   DoorClosed, 
   AppWindow, 
   Bath, 
   Fence, 
   User,
   DoorOpen,
-  DollarSign,
   CircleDollarSign
 } from 'lucide-react';
 import { 
@@ -35,7 +33,10 @@ interface Projetos2DSectionProps {
   onAddProject: (project: Projeto2D) => void;
   updateProject: (id: string, projectEdit: Projeto2D) => void;
   loadProject: () => void;
-  userName?: UserType | null
+  userName?: UserType | null,
+  modalProps: () => void;
+  onOpenNewReceivable: () => void;
+  projectSelect: (project: Projeto2D) => void;
 }
 
 export const Projetos2DSection: React.FC<Projetos2DSectionProps> = ({ 
@@ -45,7 +46,10 @@ export const Projetos2DSection: React.FC<Projetos2DSectionProps> = ({
   onAddProject,
   loadProject,
   updateProject,
-  userName
+  userName,
+  modalProps,
+  onOpenNewReceivable,
+  projectSelect
  }) => {
   
   // Collection of projects
@@ -73,11 +77,11 @@ export const Projetos2DSection: React.FC<Projetos2DSectionProps> = ({
   const filteredProjetos = projetos.filter((proj) => {
     if (!proj) return false;
     const clientName = clients.find((client) => client.id === proj.client_id)?.name ?? "Cliente Particular";
-
     const matchesSearch = 
       proj.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       clientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      proj.model.toLowerCase().includes(searchTerm.toLowerCase());
+      proj.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      proj.id.toLowerCase().includes(searchTerm.toLowerCase())
     
     if (filterTipo === 'todos') return matchesSearch;
     return matchesSearch && proj.type === filterTipo;
@@ -444,7 +448,11 @@ export const Projetos2DSection: React.FC<Projetos2DSectionProps> = ({
 
                     <div className="flex items-center gap-1">
                       <button
-                        onClick={() => {}}
+                        onClick={() => {
+                          onOpenNewReceivable();
+                          modalProps();
+                          projectSelect(proj)
+                        }}
                         className="p-1.5 text-slate-400 hover:text-slate-700 hover:bg-slate-200/60 rounded-lg transition-colors cursor-pointer"
                         title="Projeto finalizado"
                       >
@@ -519,6 +527,8 @@ export const Projetos2DSection: React.FC<Projetos2DSectionProps> = ({
 
           }}
           userName={userName}
+          modalPropsProj={onOpenNewReceivable}
+          modalNameProj={modalProps}
         />
       )}
     </div>

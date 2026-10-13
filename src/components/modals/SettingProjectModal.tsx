@@ -18,14 +18,6 @@ import {
   RotateCcw,
   Info,
   DoorOpen,
-  DownloadCloud,
-  DownloadCloudIcon,
-  CloudDownload,
-  DollarSign,
-  DollarSignIcon,
-  BadgeDollarSign,
-  LucideBadgeDollarSign,
-  CircleDollarSign
 } from 'lucide-react';
 import { 
   Projeto2D, 
@@ -48,6 +40,8 @@ interface SettingProjectModal{
     onSave: (projeto: Projeto2D) => void;
     onClose: () => void;
     userName?: UserType | null
+    modalNameProj: () => void;
+    modalPropsProj: () => void;
 }
 
 export const SettingProjectModal: React.FC<SettingProjectModal> = ({
@@ -55,7 +49,9 @@ export const SettingProjectModal: React.FC<SettingProjectModal> = ({
     project,
     onSave,
     onClose,
-    userName
+    userName,
+    modalNameProj,
+    modalPropsProj,
 }) => {
     
       // Editor View State: null means gallery list, non-null means editing/creating that project
@@ -744,14 +740,7 @@ export const SettingProjectModal: React.FC<SettingProjectModal> = ({
 
               {/* Botões de Ação do Painel Direito */}
               <div className="p-5 border-t border-slate-100 bg-slate-50/50 space-y-2.5">
-                <button
-                  type="button"
-                  onClick={() => {}}
-                  className="w-full flex items-center justify-center gap-2 px-4 py-2.5 text-xs font-bold text-[#003d9b] bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-xl transition-colors shadow-2xs cursor-pointer"
-                >
-                  <DollarSign className="w-4 h-4" />
-                  <span>Projeto Finalizado</span>
-                </button>
+                
 
                 <button
                   type="button"

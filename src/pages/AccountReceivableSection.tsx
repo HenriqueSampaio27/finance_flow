@@ -31,6 +31,7 @@ interface AccountReceivableSectionProps {
   onUpdateStatus: (id: number, paymentAmount: number, receipt: string, destination_account: string, fee: number) => void;
   user?: UserType | undefined | null
   onEntryCreated: () => Promise<void>;
+  modalProps: () => void;
 }
 
 /* -------------------------------------------------------------------------- */
@@ -110,7 +111,8 @@ export const AccountReceivableSection: React.FC<AccountReceivableSectionProps> =
   onDeleteReceivable,
   onUpdateStatus,
   user,
-  onEntryCreated
+  onEntryCreated,
+  modalProps
 }) => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<FiltroStatus>('all');
@@ -321,7 +323,11 @@ export const AccountReceivableSection: React.FC<AccountReceivableSectionProps> =
           <h1 className={typography.headings.pageTitle}>{receivablesTheme.header.title}</h1>
           <p className={typography.headings.pageSubtitle}>{receivablesTheme.header.subtitle}</p>
         </div>
-        <button id="btn-novo-recebivel" onClick={onOpenNewReceivable} className={styles.primaryButton}>
+        <button 
+        onClick={() => {
+          onOpenNewReceivable();
+          modalProps();
+        }} className={styles.primaryButton}>
           <Plus className="w-4 h-4 stroke-[2.5]" />
           <span>{receivablesTheme.header.actionLabel}</span>
         </button>

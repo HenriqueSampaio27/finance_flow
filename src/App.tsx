@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { NavigationTab } from './types';
+import { NavigationTab, Projeto2D } from './types';
 import { initialBudgetItems } from './data/initialData';
 import { Sidebar } from './components/layout/Sidebar';
 import { Header } from './components/layout/Header';
@@ -8,7 +8,6 @@ import { EntradasSection } from './pages/EntrySection';
 import { ExpensesSection } from './pages/ExpensesSection';
 import { AccountPayableSection } from './pages/AccountPayableSection';
 import { AccountReceivableSection } from './pages/AccountReceivableSection';
-import { RelatoriosSection } from './pages/RelatoriosSection';
 import { CadastroClienteSection } from './pages/CadastroClienteSection';
 import { EntryModal } from './components/modals/EntryModal';
 import { ExpensesModal } from './components/modals/ExpensesModal';
@@ -19,11 +18,13 @@ import {usePayable} from "./hooks/usePayables"
 import {useClients} from "./hooks/useClients"
 import {useUser} from "./hooks/useUser"
 import {useReceivables} from "./hooks/useReceivable"
-import { UserModal } from './components/modals/ConfigModal';
+import { BankDate } from './components/modals/BankDate';
 import { PayableModal } from './components/modals/PayablesModal';
 import { Projetos2DSection } from './pages/Projetos2DSection';
 import { useProject } from './hooks/useProject'
 import { ReceivableModal } from './components/modals/ReceivableModal';
+import { ConfiguracoesSection } from './pages/ConfiguracoesSection';
+import { useBanks } from './hooks/useBank';
 
 export default function App() {
   const [currentTab, setCurrentTab] = useState<NavigationTab>('entradas');
@@ -103,6 +104,13 @@ export default function App() {
   const [isQuickReportOpen, setIsQuickReportOpen] = useState(false);
   const [isNewReceivableOpen, setIsNewReceivableOpen] = useState(false);
 
+  const [nameModalProps, setNameModalProps] = useState("Novo Recebimento")
+  const [selectedProject, setSelectedProject] = useState<Projeto2D | undefined>();
+
+  const handleOpenReceivable = (project: Projeto2D) => {
+    setSelectedProject(project);
+  };
+
   const totalGasto = 0 //expenses.filter(e => e.status === 'Pago').reduce((a, b) => a + b.valor, 0);
 
   return (
@@ -127,17 +135,19 @@ export default function App() {
 
         {/* Dynamic View Router */}
         <main className="flex-1 pb-16">
-          {/* {currentTab === 'dashboard' && (
+           {currentTab === 'dashboard' && (
             <DashboardSection
               entries={entries}
               expenses={expenses}
-              //payables={payable}
+              payables={payable}
               receivables={receivables}
+              user={user}
+              project={project}
               onNavigate={setCurrentTab}
               onOpenNewEntry={() => setIsNewEntryOpen(true)}
               onOpenNewExpense={() => setIsNewExpenseOpen(true)}
             />
-          )} */}
+          )}
 
           {currentTab === 'entradas' && (
             <EntradasSection
@@ -177,6 +187,7 @@ export default function App() {
               clients={clients}
               user={user}
               onEntryCreated={loadEntry}
+              modalProps = {() => setNameModalProps("Novo Recebimento")}
             />
           )}
 
@@ -189,12 +200,9 @@ export default function App() {
             loadProject={loadProject}
             updateProject={editProject}
             userName={user}
-            />
-          )}
-
-          {currentTab === 'relatorios' && (
-            <RelatoriosSection
-              onOpenQuickReport={() => setIsQuickReportOpen(true)}
+            modalProps = {() => setNameModalProps("Novo Registro")}
+            onOpenNewReceivable={() => setIsNewReceivableOpen(true)}
+            projectSelect={handleOpenReceivable}
             />
           )}
 
@@ -204,16 +212,15 @@ export default function App() {
               onSaveClient={saveClient}
             />
           )}
+
+          {currentTab === 'config' && (
+            <ConfiguracoesSection
+              user={user}
+              onUpdate={saveUser}
+            />
+          )}
         </main>
       </div>
-
-      {/* Global Modals */}
-      <UserModal
-        isOpen={isUserModalOpen}
-        onClose={() => setIsUserModalOpen(false)}
-        user={user}
-        onUpdate={saveUser}
-      />
 
       {user && (<EntryModal
         isOpen={isNewEntryOpen}
@@ -228,6 +235,8 @@ export default function App() {
         onClose={() => setIsNewReceivableOpen(false)}
         onAddReceivable={saveReceivables}
         client={clients}
+        modalName={nameModalProps}
+        projectReceipt={selectedProject}
       />
 
       <ExpensesModal

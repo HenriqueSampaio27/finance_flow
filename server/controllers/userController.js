@@ -1,3 +1,4 @@
+
 const userService = require("../services/userService");
 
 async function get(req, res) {
@@ -6,48 +7,52 @@ async function get(req, res) {
 
     if (!user) {
       return res.status(404).json({
-        message: "Usuário não encontrado"
+        message: "Usuário não encontrado",
       });
     }
 
-    res.json(user);
-
+    return res.json(user);
   } catch (error) {
-    console.error(error);
+    console.error("Erro ao buscar usuário:", error);
 
-    res.status(500).json({
-      message: "Erro ao buscar usuário"
+    return res.status(500).json({
+      message: "Erro ao buscar usuário",
     });
   }
 }
 
 async function update(req, res) {
   try {
-    const { id } = req.params;
+    const id = Number(req.params.id);
+
+    if (!Number.isInteger(id) || id <= 0) {
+      return res.status(400).json({
+        message: "ID do usuário inválido",
+      });
+    }
 
     const user = userService.edit(id, req.body);
 
     if (!user) {
       return res.status(404).json({
-        message: "Usuario não encontrado"
+        message: "Usuário não encontrado",
       });
     }
 
-    res.json({
-      message: "Usuario atualizado com sucesso",
-      user
+    return res.json({
+      message: "Usuário atualizado com sucesso",
+      user,
     });
-
   } catch (error) {
-    console.error(error);
+    console.error("Erro ao atualizar usuário:", error);
 
-    res.status(500).json({
-      message: "Erro ao atualizar usuario"
+    return res.status(500).json({
+      message: "Erro ao atualizar usuário",
     });
   }
 }
 
 module.exports = {
   get,
-  update
+  update,
 };

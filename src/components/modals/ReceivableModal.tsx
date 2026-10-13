@@ -4,18 +4,20 @@ import { styles } from "../../theme";
 import { ClientItem } from "@/src/types/clientType";
 import { ReceivableItem, StatusRecebimento } from "../../types/receivableType";
 import { formatCurrency } from "../../utils/formatters";
+import { Projeto2D } from "@/src/types";
 
 interface ReceivableModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAddReceivable: (receivable: Omit<ReceivableItem, "id">) => void;
   client: ClientItem[];
+  modalName: string;
+  projectReceipt?: Projeto2D
 }
 const STATUS_OPTIONS: { value: StatusRecebimento; label: string }[] = [
   { value: "pending", label: "Pendente" },
   { value: "paid", label: "Recebido" },
   { value: "late", label: "Atrasado" },
-  { value: "canceled", label: "Cancelado" },
 ];
 
 // Data local no formato YYYY-MM-DD
@@ -55,14 +57,28 @@ export const ReceivableModal: React.FC<ReceivableModalProps> = ({
   onClose,
   onAddReceivable,
   client,
+  modalName,
+  projectReceipt
 }) => {
   const clientBoxRef = useRef<HTMLDivElement>(null);
 
-  const [formData, setFormData] = useState<FormState>(criarEstadoInicial);
+  const estadoProject = (): FormState => ({
+    document_id: projectReceipt?.id || "",
+    entry_date: hoje(),
+    due_date: "",
+    original_amount: String(projectReceipt?.estimated_value) || "",
+    received_amount: "0",
+    installment: "1",
+    status: "pending",
+  });
+
+  const [formData, setFormData] = useState<FormState>(criarEstadoInicial());
   const [clientSearch, setClientSearch] = useState("");
   const [clienteSelecionado, setClienteSelecionado] = useState<ClientItem | null>(null);
   const [showClients, setShowClients] = useState(false);
   const [erros, setErros] = useState<Erros>({});
+
+  
 
   // Fecha a lista de clientes ao clicar fora (input + lista dentro do mesmo wrapper)
   useEffect(() => {
@@ -79,15 +95,44 @@ export const ReceivableModal: React.FC<ReceivableModalProps> = ({
   }, []);
 
   // Sempre que o modal abrir, começa com o formulário limpo
+  
   useEffect(() => {
-    if (isOpen) {
+    if (!isOpen) return;
+
+    setErros({});
+    setShowClients(false);
+
+    if (projectReceipt && modalName !== "Novo Recebimento") {
+      // Procura o cliente vinculado ao projeto
+      const projetoCliente = client.find(
+        (c) => Number(c.id) === Number(projectReceipt.client_id)
+      );
+
+      // Preenche os campos com os dados do projeto
+      setFormData({
+        document_id: String(projectReceipt.id ?? ""),
+        entry_date: hoje(),
+        due_date: "",
+        original_amount:
+          projectReceipt.estimated_value != null
+            ? String(projectReceipt.estimated_value)
+            : "",
+        received_amount: "0",
+        installment: "1",
+        status: "pending",
+      });
+
+      // Preenche o campo Cliente e seleciona o cliente
+      setClienteSelecionado(projetoCliente ?? null);
+      setClientSearch(projetoCliente?.name ?? "");
+    } else {
+      // Abertura normal: formulário vazio
       setFormData(criarEstadoInicial());
-      setClientSearch("");
       setClienteSelecionado(null);
-      setShowClients(false);
-      setErros({});
+      setClientSearch("");
     }
-  }, [isOpen]);
+  }, [isOpen, projectReceipt, client, modalName]);
+
 
   const original = parseFloat(formData.original_amount) || 0;
   const recebido = parseFloat(formData.received_amount) || 0;
@@ -187,6 +232,8 @@ export const ReceivableModal: React.FC<ReceivableModalProps> = ({
     onClose();
   };
 
+
+
   const inputErro = (campo: keyof Erros) =>
     erros[campo] ? "border-red-300 focus:ring-red-200" : "";
 
@@ -206,10 +253,14 @@ export const ReceivableModal: React.FC<ReceivableModalProps> = ({
               <Plus className="w-4 h-4 stroke-[2.5]" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-slate-900">Novo Recebimento</h3>
+              <h3 className="text-base font-bold text-slate-900">{modalName}</h3>
+              {modalName == "Novo Recebimento" ? 
               <p className="text-xs text-slate-400">
                 Registre um valor a receber de um cliente.
-              </p>
+              </p>: 
+              <p className="text-xs text-slate-400">
+                Registre o pagamento do projeto.
+              </p>}
             </div>
           </div>
           <button

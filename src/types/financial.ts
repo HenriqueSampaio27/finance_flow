@@ -4,39 +4,12 @@ export type NavigationTab =
   | 'saidas'
   | 'contas-pagar'
   | 'contas-receber'
-  | 'relatorios'
   | 'projetos'
-  | 'cadastro-cliente';
+  | 'cadastro-cliente'
+  | 'config';
 
-export type StatusRecebimento = 'Recebido' | 'Pendente' | 'Atrasado' | 'Cancelado';
-export type StatusPagamento = 'Pago' | 'Pendente' | 'Vencido' | 'Agendado' | 'Parcial';
-
-export interface PayableItem {
-  id: string;
-  fornecedor: string;
-  avatarLetter: string;
-  documento: string;
-  vencimento: string; // e.g. "12/11/2023"
-  vencimentoTag?: string; // e.g. "VENCIDO HÁ 4 DIAS", "VENCE HOJE"
-  valorOriginal: number;
-  valorPago: number;
-  saldo: number;
-  parcela: string;
-  status: StatusPagamento;
-}
-
-export interface ReceivableItem {
-  id: string;
-  cliente: string;
-  documento: string;
-  vencimento: string;
-  valorOriginal: number;
-  valorRecebido: number;
-  saldo: number;
-  parcela: string;
-  isStriked?: boolean;
-  status: StatusRecebimento;
-}
+export type StatusRecebimento = 'Recebido' | 'Pendente' | 'Atrasado' ;
+export type StatusPagamento = 'Pago' | 'Pendente' | 'Vencido' | 'Parcial';
 
 export interface BudgetItem {
   id: string;

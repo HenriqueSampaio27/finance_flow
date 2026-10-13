@@ -5,12 +5,11 @@ import {
   ArrowUpRight, 
   CalendarDays, 
   Receipt, 
-  TrendingUp, 
-  BarChart3, 
+  TrendingUp,  
   Settings, 
-  HelpCircle,
   Plus,
-  UserPlus
+  UserPlus,
+  
 } from 'lucide-react';
 import { NavigationTab } from '../../types';
 import { UserType } from '@/src/types/userType';
@@ -32,14 +31,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
   user
 }) => {
   const menuItems = [
-    { id: 'dashboard' as NavigationTab, label: 'Dashboard', icon: LayoutGrid },
+    { id: 'dashboard' as NavigationTab, label: 'Relatório', icon: LayoutGrid },
     { id: 'entradas' as NavigationTab, label: 'Entradas', icon: ArrowDownLeft },
     { id: 'saidas' as NavigationTab, label: 'Saídas', icon: ArrowUpRight },
     { id: 'contas-pagar' as NavigationTab, label: 'Contas a Pagar', icon: CalendarDays },
     { id: 'contas-receber' as NavigationTab, label: 'Contas a Receber', icon: Receipt },
     { id: 'projetos' as NavigationTab, label: 'Projeto', icon: TrendingUp },
-    { id: 'relatorios' as NavigationTab, label: 'Relatórios', icon: BarChart3 },
     { id: 'cadastro-cliente' as NavigationTab, label: 'Cadastro de Cliente', icon: UserPlus },
+    { id: 'config' as NavigationTab, label: 'Configurações', icon: Settings}
   ];
 
   return (
