@@ -100,7 +100,6 @@ export const SettingProjectModal: React.FC<SettingProjectModal> = ({
 
         setEditingProjeto(projetoAtualizado);
         onSave(projetoAtualizado);
-        //console.log(projetoAtualizado)
         setSaveSuccessMessage(true);
         setTimeout(() => setSaveSuccessMessage(false), 3000);
       };

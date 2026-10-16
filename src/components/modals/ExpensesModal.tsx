@@ -2,20 +2,22 @@ import React, { useState } from 'react';
 import { X, Plus, FlaskRound } from 'lucide-react';
 import { ExpenseItem } from '../../types/expensesType';
 import { styles } from '../../theme';
-import { UserType } from '@/src/types/userType';
+import { Bank_account, UserType } from '@/src/types/userType';
 
 interface ExpensesModalProps {
   isOpen: boolean;
   onClose: () => void;
   onAddExpense: (expense: ExpenseItem) => void;
   user: UserType | undefined | null;
+  bank: Bank_account[]
 }
 
 export const ExpensesModal: React.FC<ExpensesModalProps> = ({
   isOpen,
   onClose,
   onAddExpense,
-  user
+  user,
+  bank
 }) => {
   const [formData, setFormData] = useState<Partial<ExpenseItem>>({
         date: "",
@@ -68,15 +70,10 @@ export const ExpensesModal: React.FC<ExpensesModalProps> = ({
     }));
   };
 
-  const bankAccounts = [
-      user?.bank_account1,
-      user?.bank_account2,
-      user?.bank_account3,
-      user?.bank_account4,
-      user?.bank_account5,
-    ].filter((account): account is string => 
-      !!account && account.trim() !== ""
-    );
+  const bankAccounts = bank
+  .filter((account) => !!account)
+  .map((account) => account.bank);
+
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">

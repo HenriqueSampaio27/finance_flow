@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { X, Plus, DollarSign } from 'lucide-react';
 import { EntryItem } from '../../types/entryType';
 import { styles } from '../../theme';
-import { UserType } from '@/src/types/userType';
+import { Bank_account, UserType } from '@/src/types/userType';
 import {ClientItem} from '@/src/types/clientType'
 
 interface EntryModalProps {
@@ -10,6 +10,7 @@ interface EntryModalProps {
   onClose: () => void;
   onAddEntry: (entry: EntryItem) => void;
   user: UserType | null
+  bank: Bank_account[]
   client: ClientItem[]
 }
 
@@ -18,11 +19,13 @@ export const EntryModal: React.FC<EntryModalProps> = ({
   onClose,
   onAddEntry,
   user,
-  client
+  client,
+  bank
 }) => {
   const clientDropdownRef = useRef<HTMLDivElement>(null);
   const [showClients, setShowClients] = useState(false);
   const [errorClient, setErrorClient] = useState("");
+  const [errorDestin, setErrorDestin] = useState("");
   const [clientSearch, setClientSearch] = useState("");
   const [clienteSelecionado, setClienteSelecionado] = useState<ClientItem | null>(null);
   const [formData, setFormData] = useState<Partial<EntryItem>>({
@@ -97,6 +100,23 @@ export const EntryModal: React.FC<EntryModalProps> = ({
       setErrorClient("Selecione um cliente da lista.");
       return;
     }
+    const receipt = formData.receipt?.trim();
+    const destinationAccount = formData.destination_account?.trim();
+
+    const isCash = destinationAccount === "Caixa Interno";
+    const isCashReceipt = receipt === "Espécie";
+
+    if (!receipt || !destinationAccount) {
+      setErrorDestin("Selecione o recebimento e a conta de destino.");
+      return;
+    }
+
+    if (isCash !== isCashReceipt) {
+      setErrorDestin("Espécie deve usar o Caixa Interno; outros recebimentos devem usar uma conta bancária.");
+      return;
+    }
+
+    setErrorDestin("");
 
       const newEntry: EntryItem = {
       date: formData.date || "",
@@ -134,15 +154,9 @@ export const EntryModal: React.FC<EntryModalProps> = ({
         .includes(clientSearch.toLowerCase())
     );
 
-    const bankAccounts = [
-      user?.bank_account1,
-      user?.bank_account2,
-      user?.bank_account3,
-      user?.bank_account4,
-      user?.bank_account5,
-    ].filter((account): account is string => 
-      !!account && account.trim() !== ""
-    );
+    const bankAccounts = bank
+    .filter((account) => !!account)
+    .map((account) => account.bank);
   
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-xs flex items-center justify-center p-4">
@@ -299,12 +313,14 @@ export const EntryModal: React.FC<EntryModalProps> = ({
                     const receipt = e.target.value;
                     feeToCheck(receipt)
                     handleInputChange("receipt", e.target.value)
+                    setErrorDestin("")
                   }}
                 className={styles.input}
               >
                 <option>PIX</option>
                 <option>Boleto Bancário</option>
                 <option>Cartão de Crédito</option>
+                <option>Cartão de Crédito Parc.</option>
                 <option>Cartão de Débito</option>
                 <option>Espécie</option>
               </select>
@@ -313,35 +329,59 @@ export const EntryModal: React.FC<EntryModalProps> = ({
               <label className="block text-xs font-semibold text-slate-600 mb-1">Conta de Destino</label>
               <select
                 value={formData.destination_account}
-                onChange={(e) =>
+                onChange={(e) =>{
                   handleInputChange("destination_account", e.target.value)
-                }
+                  setErrorDestin("")
+                }}
                 className={styles.input}
               >
+                <option value="Caixa Interno">
+                  Caixa Interno
+                </option>
                 {bankAccounts.map((account, index) => (
                   <option key={index} value={account}>
                     {account}
                   </option>
                 ))}
-
-                <option value="Caixa Interno">
-                  Caixa Interno
-                </option>
               </select>
+              {errorDestin && (
+                  <p className="mt-1 text-xs font-medium text-red-500">
+                    {errorDestin}
+                  </p>
+                )}
             </div>
           </div>
 
-          <div>
-            <label className="block text-xs font-semibold text-slate-600 mb-1">Parcela</label>
-            <div className="flex grid-cols-2 gap-4">
-                  <input
-                    type="text"
-                    placeholder="Ex: 1/4"
-                    value={formData.installment}
-                    onChange={(e) => handleInputChange("installment", e.target.value)}
-                    className={styles.input}
-                  />
-              </div>
+          <div className="grid grid-cols-2 gap-4">
+            
+              {
+                formData.receipt === "Cartão de Crédito Parc." ?
+                  (<div>
+                    <label className="block text-xs font-semibold text-slate-600 mb-1">Taxa de Parcelamento (%)</label>
+                      <div className="flex grid-cols-2 gap-4">
+                            <input
+                              type="text"
+                              placeholder="Ex: 5.4"
+                              value={formData.fee}
+                              onChange={(e) => handleInputChange("fee", e.target.value)}
+                              className={styles.input}
+                            />
+                        </div>
+                  </div>) : null
+              }
+              
+            <div>
+              <label className="block text-xs font-semibold text-slate-600 mb-1">Parcela</label>
+              <div className="flex grid-cols-2 gap-4">
+                    <input
+                      type="text"
+                      placeholder="Ex: 1/4"
+                      value={formData.installment}
+                      onChange={(e) => handleInputChange("installment", e.target.value)}
+                      className={styles.input}
+                    />
+                </div>
+            </div>
           </div>
 
           <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3 mt-6">

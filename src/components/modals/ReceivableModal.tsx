@@ -13,6 +13,7 @@ interface ReceivableModalProps {
   client: ClientItem[];
   modalName: string;
   projectReceipt?: Projeto2D
+  onUpdateProject: (projectId: string, status: string) => void;
 }
 const STATUS_OPTIONS: { value: StatusRecebimento; label: string }[] = [
   { value: "pending", label: "Pendente" },
@@ -58,7 +59,8 @@ export const ReceivableModal: React.FC<ReceivableModalProps> = ({
   onAddReceivable,
   client,
   modalName,
-  projectReceipt
+  projectReceipt,
+  onUpdateProject
 }) => {
   const clientBoxRef = useRef<HTMLDivElement>(null);
 
@@ -229,6 +231,9 @@ export const ReceivableModal: React.FC<ReceivableModalProps> = ({
     };
 
     onAddReceivable(novoItem);
+    if(projectReceipt != null){
+      onUpdateProject(projectReceipt?.id, "approved")
+    }
     onClose();
   };
 

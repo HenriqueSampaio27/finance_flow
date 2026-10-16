@@ -11,7 +11,8 @@ import {
   Fence, 
   User,
   DoorOpen,
-  CircleDollarSign
+  CircleDollarSign,
+  CheckCircle2
 } from 'lucide-react';
 import { 
   Projeto2D, 
@@ -336,9 +337,14 @@ export const Projetos2DSection: React.FC<Projetos2DSectionProps> = ({
               return (
                 <div
                   key={proj.id}
-                  className="bg-white rounded-2xl border border-slate-200/90 shadow-xs hover:shadow-md hover:border-slate-300 transition-all duration-200 flex flex-col justify-between overflow-hidden group"
+                  className={`rounded-2xl border shadow-xs transition-all duration-200 flex flex-col justify-between overflow-hidden group ${
+                    proj.status === 'approved'
+                      ? 'bg-emerald-50/50 border-emerald-300 hover:border-emerald-400 hover:shadow-md'
+                      : 'bg-white border-slate-200/90 hover:shadow-md hover:border-slate-300'
+                  }`}
                 >
                   <div>
+                    
                     {/* Visual 2D Drawing Thumbnail Area */}
                     <div 
                       onClick={() => handleEditProject(proj)}
@@ -363,11 +369,18 @@ export const Projetos2DSection: React.FC<Projetos2DSectionProps> = ({
                       />
 
                       {/* Floating Type Pill on Thumbnail */}
-                      <div className="absolute top-3 left-3">
+                      <div className="absolute top-3 left-3 flex items-center gap-2">
                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold border ${badge.bg}`}>
                           <Icon className="w-3 h-3" />
                           <span>{badge.label}</span>
                         </span>
+
+                        {proj.status === 'approved' && (
+                          <span className="inline-flex items-center gap-1.5 rounded-full border border-emerald-200 bg-emerald-100 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide text-emerald-800">
+                            <CheckCircle2 className="h-3.5 w-3.5" />
+                            Aprovado
+                          </span>
+                        )}
                       </div>
 
                       {/* Dimension Pill on Thumbnail */}

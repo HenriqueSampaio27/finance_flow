@@ -17,7 +17,7 @@ import { ReceivableItem, StatusRecebimento } from '../types/receivableType';
 import { ClientItem } from '../types/clientType';
 import { formatCurrency } from '../utils/formatters';
 import { receivablesTheme, styles, typography } from '../theme';
-import { UserType } from '../types/userType';
+import { Bank_account, UserType } from '../types/userType';
 
 /* -------------------------------------------------------------------------- */
 /*  Props                                                                      */
@@ -32,6 +32,7 @@ interface AccountReceivableSectionProps {
   user?: UserType | undefined | null
   onEntryCreated: () => Promise<void>;
   modalProps: () => void;
+  bank: Bank_account[]
 }
 
 /* -------------------------------------------------------------------------- */
@@ -112,7 +113,8 @@ export const AccountReceivableSection: React.FC<AccountReceivableSectionProps> =
   onUpdateStatus,
   user,
   onEntryCreated,
-  modalProps
+  modalProps,
+  bank
 }) => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<FiltroStatus>('all');
@@ -126,19 +128,13 @@ export const AccountReceivableSection: React.FC<AccountReceivableSectionProps> =
   const [paymentReceipt, setPaymentReceipt] = useState("PIX");
   const [paymentDestinationAccount, setPaymentDestinationAccount] = useState("");
   const [paymentFee, setPaymentFee] = useState(0);
+  const [errorDestin, setErrorDestin] = useState("")
 
   const hoje = hojeISO();
 
-  const bankAccounts = [
-    user?.bank_account1,
-    user?.bank_account2,
-    user?.bank_account3,
-    user?.bank_account4,
-    user?.bank_account5,
-  ].filter(
-    (account): account is string =>
-      !!account && account.trim() !== ""
-  );
+  const bankAccounts = bank
+  .filter((account) => !!account)
+  .map((account) => account.bank);
 
   const calculatePaymentFee = (receipt: string) => {
     if (!user) return 0;
@@ -287,6 +283,25 @@ export const AccountReceivableSection: React.FC<AccountReceivableSectionProps> =
     if (amount > paymentItem.balance) {
       return;
     }
+
+    
+    const receipt = paymentReceipt?.trim();
+    const destinationAccount = paymentDestinationAccount?.trim();
+
+    const isCash = destinationAccount === "Caixa Interno";
+    const isCashReceipt = receipt === "Espécie";
+
+    if (!receipt || !destinationAccount) {
+      setErrorDestin("Selecione o recebimento e a conta de destino.");
+      return;
+    }
+
+    if (isCash !== isCashReceipt) {
+      setErrorDestin("Espécie deve usar o Caixa Interno; outros recebimentos devem usar uma conta bancária.");
+      return;
+    }
+
+    setErrorDestin("");
 
     try {
       await onUpdateStatus(
@@ -961,11 +976,12 @@ export const AccountReceivableSection: React.FC<AccountReceivableSectionProps> =
 
                 <select
                   value={paymentReceipt}
-                  onChange={(e) =>
+                  onChange={(e) =>{
                     handlePaymentReceiptChange(
                       e.target.value
                     )
-                  }
+                    setErrorDestin("")
+                  }}
                   className={styles.input}
                 >
 
@@ -979,6 +995,10 @@ export const AccountReceivableSection: React.FC<AccountReceivableSectionProps> =
 
                   <option value="Cartão de Crédito">
                     Cartão de Crédito
+                  </option>
+
+                  <option value="Cartão de Crédito Parc.">
+                    Cartão de Crédito Parc.
                   </option>
 
                   <option value="Cartão de Débito">
@@ -1003,10 +1023,12 @@ export const AccountReceivableSection: React.FC<AccountReceivableSectionProps> =
 
                 <select
                   value={paymentDestinationAccount}
-                  onChange={(e) =>
+                  onChange={(e) =>{
                     setPaymentDestinationAccount(
                       e.target.value
                     )
+                    setErrorDestin("")
+                  }
                   }
                   className={styles.input}
                 >
@@ -1027,14 +1049,18 @@ export const AccountReceivableSection: React.FC<AccountReceivableSectionProps> =
                   </option>
 
                 </select>
-
+                {errorDestin && (
+                  <p className="mt-1 text-xs font-medium text-red-500">
+                    {errorDestin}
+                  </p>
+                )}
               </div>
 
             </div>
 
 
             {/* TAXA */}
-            <div className="bg-slate-50 border border-slate-100 rounded-xl p-3 mb-5">
+            {paymentReceipt != "Cartão de Crédito Parc." ? (<div className="bg-slate-50 border border-slate-100 rounded-xl p-3 mb-5">
 
               <div className="flex items-center justify-between">
 
@@ -1048,8 +1074,30 @@ export const AccountReceivableSection: React.FC<AccountReceivableSectionProps> =
 
               </div>
 
-            </div>
+            </div>)
+            : 
+              (<div className="flex items-center justify-between">
+                <span className="text-xs font-medium text-slate-500">
+                  Taxa de recebimento
+                </span>
 
+                <div className="relative w-24">
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={paymentFee}
+                    onChange={(e) => setPaymentFee(Number(e.target.value))}
+                    className="w-full rounded-md border border-slate-200 bg-white py-1 pl-2 pr-6 text-right text-sm font-bold text-slate-700 outline-none focus:border-blue-500"
+                  />
+
+                  <span className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 text-sm font-bold text-slate-500">
+                    %
+                  </span>
+                </div>
+              </div>)
+            
+            }
 
             {/* RESTANTE */}
             {paymentAmount && (
@@ -1096,7 +1144,6 @@ export const AccountReceivableSection: React.FC<AccountReceivableSectionProps> =
                   !paymentAmount ||
                   Number(paymentAmount) <= 0 ||
                   Number(Number(paymentAmount).toFixed(2)) > Number(Number(paymentItem.balance).toFixed(2))
-                  
                 }
                 className={styles.primaryButton}
               >

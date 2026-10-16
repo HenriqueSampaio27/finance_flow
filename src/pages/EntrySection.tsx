@@ -16,21 +16,26 @@ import {
 import { EntryItem } from '../types/entryType';
 import { formatCurrency, exportToCSV } from '../utils/formatters';
 import { entriesTheme, styles, typography } from '../theme';
-import { UserType } from '../types/userType';
+import { Bank_account, UserType } from '../types/userType';
 import DateRangeFilter from '../components/modals/DateRangeFilter';
+import { ClientItem } from '../types';
 
 interface EntradasSectionProps {
   entries: EntryItem[];
+  client: ClientItem[];
   onOpenNewEntry: () => void;
   onDeleteEntry: (id: number) => void;
   user: UserType | null | undefined;
+  bank: Bank_account[];
 }
 
 export const EntradasSection: React.FC<EntradasSectionProps> = ({
   entries,
   onOpenNewEntry,
   onDeleteEntry,
-  user
+  user,
+  client,
+  bank
 }) => {
   // Filter states
   const [period, setPeriod] = useState('Todos');
@@ -46,14 +51,20 @@ export const EntradasSection: React.FC<EntradasSectionProps> = ({
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   
-  const accounts = [
-    user?.bank_account1,
-    user?.bank_account2,
-    user?.bank_account3,
-    user?.bank_account4,
-    user?.bank_account5,
-  ].filter((account): account is string => !!account);
+  const accounts = bank
+  .filter((account) => !!account)
+  .map((account) => account.bank);
 
+  const getBankColor = (destinationAccount: string) => {
+    const account = bank.find(
+      (account) =>
+        account.name === destinationAccount ||
+        account.bank === destinationAccount
+    );
+
+    return account?.color || "#f59e0b";
+  };
+  
   // Derived filtered entries
   const filteredEntries = useMemo(() => {
 
@@ -385,16 +396,23 @@ export const EntradasSection: React.FC<EntradasSectionProps> = ({
                     </span>
                   </td>
                   <td className="py-4 px-4 text-xs text-slate-700 font-medium whitespace-nowrap">
-                    {item.client_id}
+                    {
+                      client.find(
+                        (clients) => clients.id === item.client_id
+                      )?.name ?? "Cliente Particular"
+                      }
                   </td>
                   <td className="py-4 px-4 text-xs text-slate-600 whitespace-nowrap">
                     {item.receipt}
                   </td>
                   <td className="py-4 px-4 whitespace-nowrap">
                     <span className="inline-flex items-center gap-1.5 text-xs text-slate-700 font-medium">
-                      <span className={`w-2 h-2 rounded-full ${
-                        item.destination_account === 'Itaú PJ' ? 'bg-[#003d9b]' : item.destination_account === 'NuBank PJ' ? 'bg-purple-600' : 'bg-amber-500'
-                      }`} />
+                      <span className="w-2 h-2 rounded-full"
+                        style={{
+                          backgroundColor: getBankColor(item.destination_account),
+                        }}
+                      />
+
                       {item.destination_account}
                     </span>
                   </td>

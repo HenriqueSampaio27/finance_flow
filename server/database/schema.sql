@@ -56,33 +56,7 @@ CREATE TABLE IF NOT EXISTS users (
     credit_fee REAL NOT NULL DEFAULT 0,
     pix_fee REAL NOT NULL DEFAULT 0,
     debit_fee REAL NOT NULL DEFAULT 0,
-    cash_balance_initial REAL NOT NULL DEFAULT 0,
-
-    bank_account1 INTEGER,
-    bank_account2 INTEGER,
-    bank_account3 INTEGER,
-    bank_account4 INTEGER,
-    bank_account5 INTEGER,
-
-    FOREIGN KEY (bank_account1)
-        REFERENCES bank(id)
-        ON UPDATE CASCADE ON DELETE SET NULL,
-
-    FOREIGN KEY (bank_account2)
-        REFERENCES bank(id)
-        ON UPDATE CASCADE ON DELETE SET NULL,
-
-    FOREIGN KEY (bank_account3)
-        REFERENCES bank(id)
-        ON UPDATE CASCADE ON DELETE SET NULL,
-
-    FOREIGN KEY (bank_account4)
-        REFERENCES bank(id)
-        ON UPDATE CASCADE ON DELETE SET NULL,
-
-    FOREIGN KEY (bank_account5)
-        REFERENCES bank(id)
-        ON UPDATE CASCADE ON DELETE SET NULL
+    cash_balance_initial REAL NOT NULL DEFAULT 0
 );
 
 

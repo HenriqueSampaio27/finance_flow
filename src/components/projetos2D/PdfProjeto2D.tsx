@@ -6,7 +6,6 @@ import { ClientItem } from '@/src/types';
 import { title as EMPRESA_PADRAO } from '@/src/types/titleFinanceFlow';
 import { formatCurrency } from '../../utils/formatters';
 import { Estrutura2DRenderer } from './Estrutura2DRenderer';
-
 import { UserType } from '@/src/types/userType';
 
 /* -------------------------------------------------------------------------- */
@@ -250,6 +249,14 @@ export const gerarProjetoPDF = async ({
   const wrap = (text: string, width: number): string[] =>
     doc.splitTextToSize(limpar(text), width) as string[];
 
+  // Corta o texto com "…" para caber na largura (usa a fonte atualmente ativa)
+  const truncar = (text: string, maxW: number): string => {
+    if (doc.getTextWidth(text) <= maxW) return text;
+    let t = text;
+    while (t.length > 1 && doc.getTextWidth(`${t}...`) > maxW) t = t.slice(0, -1);
+    return `${t.trimEnd()}...`;
+  };
+
   const novaPaginaSe = (alturaNecessaria: number) => {
     if (y + alturaNecessaria > BOTTOM) {
       doc.addPage();
@@ -294,6 +301,26 @@ export const gerarProjetoPDF = async ({
 
   const valor = limpar(formatCurrency(projeto.estimated_value || 0));
 
+  /* ----------------------- dados da empresa (user) ---------------------- */
+
+  // Razão social (se não houver, cai para o nome padrão como antes)
+  const razaoSocial = limpar((user?.razao || '').trim()) || limpar(empresa);
+
+  // Especialidade: substitui o antigo selo fixo "Vidros & Esquadrias"
+  const especialidade = limpar((user?.especialidade || '').trim());
+
+  // Contato: substitui a antiga frase fixa abaixo do nome da empresa
+  const contatoEmpresa = [
+    user?.phone ? `Tel: ${limpar(String(user.phone).trim())}` : '',
+    user?.email ? limpar(String(user.email).trim()) : '',
+  ]
+    .filter(Boolean)
+    .join('  •  ');
+
+  // Garantia padrão (mantém o texto antigo como fallback)
+  const garantiaPadrao =
+    limpar((user?.garantia_padrao || '').trim()) || 'Garantia de 1 ano para ferragens e vedação.';
+  const initialLetra = (user?.razao?.trim().charAt(0).toUpperCase() || '')
   const desenho = await rasterizarEstrutura(projeto);
 
   /* ====================================================================== */
@@ -304,32 +331,54 @@ export const gerarProjetoPDF = async ({
   caixa(M, y, 13, 13, { fill: COR.azul, raio: 3 });
   font(16, 'bold');
   setText(COR.branco);
-  doc.text('F', M + 6.5, y + 8.9, { align: 'center' });
+  doc.text(initialLetra, M + 6.5, y + 8.9, { align: 'center' });
 
-  // Nome da empresa + badge
+  // Largura disponível à esquerda (reserva ~52mm para o bloco da direita)
   const xTitulo = M + 17;
-  font(15, 'bold');
-  setText(COR.slate900);
-  doc.text(limpar(empresa), xTitulo, y + 5.4);
-  const larguraEmpresa = doc.getTextWidth(limpar(empresa));
+  const larguraDisponivel = PAGE_W - M - 52 - xTitulo;
 
+  // Selo de especialidade (truncado se for muito longo)
   font(6.5, 'bold');
-  const badgeTxt = 'Vidros & Esquadrias';
-  const badgeW = doc.getTextWidth(badgeTxt) + 5;
-  const badgeX = xTitulo + larguraEmpresa + 3;
-  caixa(badgeX, y + 1.6, badgeW, 4.8, {
-    fill: COR.azulClaro,
-    border: COR.azulBorda,
-    raio: 1,
-    lw: 0.2,
-  });
-  setText(COR.azul);
-  doc.text(badgeTxt, badgeX + badgeW / 2, y + 4.9, { align: 'center' });
+  const badgeMax = Math.min(60, larguraDisponivel * 0.4);
+  const badgeTxt = especialidade ? truncar(especialidade, badgeMax - 5) : '';
+  const badgeW = badgeTxt ? doc.getTextWidth(badgeTxt) + 5 : 0;
 
+  // Razão social: reduz a fonte se necessário para não invadir o bloco da direita
+  let fsEmpresa = 15;
+  font(fsEmpresa, 'bold');
+  while (
+    fsEmpresa > 9 &&
+    doc.getTextWidth(razaoSocial) + (badgeW ? badgeW + 3 : 0) > larguraDisponivel
+  ) {
+    fsEmpresa -= 0.5;
+    font(fsEmpresa, 'bold');
+  }
+  setText(COR.slate900);
+  doc.text(razaoSocial, xTitulo, y + 5.4);
+  const larguraEmpresa = doc.getTextWidth(razaoSocial);
+
+  if (badgeTxt) {
+    font(6.5, 'bold');
+    const badgeX = xTitulo + larguraEmpresa + 3;
+    caixa(badgeX, y + 1.6, badgeW, 4.8, {
+      fill: COR.azulClaro,
+      border: COR.azulBorda,
+      raio: 1,
+      lw: 0.2,
+    });
+    setText(COR.azul);
+    doc.text(badgeTxt, badgeX + badgeW / 2, y + 4.9, { align: 'center' });
+  }
+
+  // Telefone + e-mail da empresa
   font(7.5);
   setText(COR.slate500);
   doc.text(
-    'Projetos personalizados  •  Portas de vidro, janelas, boxes e portões',
+    truncar(
+      contatoEmpresa ||
+        'Projetos personalizados  •  Portas de vidro, janelas, boxes e portões',
+      larguraDisponivel
+    ),
     xTitulo,
     y + 10.8
   );
@@ -548,12 +597,15 @@ export const gerarProjetoPDF = async ({
 
   const alturaSpecs = 4 + 6 + specsCalc.reduce((acc, s) => acc + s.h, 0) + 3;
 
+  // Observações do projeto (a garantia agora vem da empresa, em bloco próprio)
   const textoNotas =
     projeto.notes ||
-    'Projeto desenvolvido sob medida com vidro de segurança e perfis de alta durabilidade. Garantia de 1 ano para ferragens e vedação.';
+    'Projeto desenvolvido sob medida com vidro de segurança e perfis de alta durabilidade.';
   font(7.5);
   const notasLinhas = wrap(textoNotas, innerW);
-  const alturaNotas = 4 + 6 + notasLinhas.length * 3.9 + 4;
+  const garantiaLinhas = wrap(garantiaPadrao, innerW);
+  const alturaNotas =
+    4 + 6 + notasLinhas.length * 3.9 + 3 + 3.9 + garantiaLinhas.length * 3.9 + 4;
 
   const alturaBoxes = Math.max(alturaSpecs, alturaNotas, 45);
   novaPaginaSe(alturaBoxes);
@@ -606,6 +658,17 @@ export const gerarProjetoPDF = async ({
     doc.text(t, xR + 4, y + 13 + k * 3.9);
   });
 
+  // Garantia padrão da empresa
+  let gy = y + 13 + notasLinhas.length * 3.9 + 3;
+  font(7.5, 'bold');
+  setText(COR.slate800);
+  doc.text('Garantia:', xR + 4, gy);
+  font(7.5);
+  setText(COR.slate600);
+  garantiaLinhas.forEach((t, k) => {
+    doc.text(t, xR + 4, gy + 3.9 + k * 3.9);
+  });
+
   y += alturaBoxes + 10;
 
   /* ====================================================================== */
@@ -643,7 +706,7 @@ export const gerarProjetoPDF = async ({
 
     font(7);
     setText(COR.slate400);
-    doc.text(`${limpar(empresa)}  •  Proposta Ref #${projeto.id}`, M, fy);
+    doc.text(`${razaoSocial}  •  Proposta Ref #${projeto.id}`, M, fy);
     doc.text(`Página ${p} de ${total}`, PAGE_W - M, fy, { align: 'right' });
     doc.text('Proposta válida por 15 dias a partir da data de emissão.', PAGE_W / 2, fy, {
       align: 'center',

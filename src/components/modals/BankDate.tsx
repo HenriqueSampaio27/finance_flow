@@ -12,6 +12,9 @@ import {
 import { Bank_account } from "@/src/types/userType";
 import { useBanks } from "@/src/hooks/useBank";
 
+interface BankProps {
+  loadEntryBank: () => void;
+}
 
 type BankForm = Omit<Bank_account, "id">;
 
@@ -26,7 +29,9 @@ const initialForm: BankForm = {
   color: "#64748b",
 };
 
-export const BankDate = () => {
+export const BankDate: React.FC<BankProps> = ({
+  loadEntryBank
+}) => {
   const {
     banks,
     loading,
@@ -118,6 +123,7 @@ export const BankDate = () => {
 
       if (editingId !== null) {
         await saveBank(editingId, data);
+        await loadEntryBank();
         setSuccessMessage("Conta bancária atualizada com sucesso.");
       } else {
         await createBankAccount(data);

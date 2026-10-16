@@ -73,6 +73,44 @@ export const CadastroClienteSection: React.FC<CadastroClienteSectionProps> = ({
     }
   };
 
+  const formatCpfCnpj = (value: string) => {
+    const numbers = value.replace(/\D/g, "").slice(0, 14);
+
+    if (numbers.length <= 11) {
+      // CPF: 000.000.000-00
+      return numbers
+        .replace(/(\d{3})(\d)/, "$1.$2")
+        .replace(/(\d{3})(\d)/, "$1.$2")
+        .replace(/(\d{3})(\d{1,2})$/, "$1-$2");
+    }
+
+    // CNPJ: 00.000.000/0000-00
+    return numbers
+      .replace(/^(\d{2})(\d)/, "$1.$2")
+      .replace(/^(\d{2})\.(\d{3})(\d)/, "$1.$2.$3")
+      .replace(/\.(\d{3})(\d)/, ".$1/$2")
+      .replace(/(\d{4})(\d)/, "$1-$2");
+  };
+
+  const formatPhone = (value: string) => {
+    const numbers = value.replace(/\D/g, "").slice(0, 11);
+
+    if (numbers.length <= 2) {
+      return numbers.length ? `(${numbers}` : "";
+    }
+
+    if (numbers.length <= 6) {
+      return numbers.replace(/^(\d{2})(\d+)/, "($1) $2");
+    }
+
+    if (numbers.length <= 10) {
+      return numbers.replace(/^(\d{2})(\d{4})(\d+)/, "($1) $2-$3");
+    }
+
+    return numbers.replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3");
+  };
+
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name) return;
@@ -195,7 +233,7 @@ export const CadastroClienteSection: React.FC<CadastroClienteSectionProps> = ({
                     type="text"
                     placeholder="000.000.000-00"
                     value={formData.cpf || ''}
-                    onChange={(e) => handleInputChange('cpf', e.target.value)}
+                    onChange={(e) => handleInputChange('cpf', formatCpfCnpj(e.target.value))}
                     className={styles.input}
                   />
                 </div>
@@ -244,7 +282,7 @@ export const CadastroClienteSection: React.FC<CadastroClienteSectionProps> = ({
                     type="text"
                     placeholder="(11) 90000-0000"
                     value={formData.phone || ''}
-                    onChange={(e) => handleInputChange('phone', e.target.value)}
+                    onChange={(e) => handleInputChange('phone', formatPhone(e.target.value))}
                     className={styles.input}
                   />
                 </div>

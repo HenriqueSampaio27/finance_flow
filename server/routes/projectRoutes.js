@@ -11,6 +11,8 @@ router.get("/:id", project.getById);
 
 router.put("/:id", project.updateProject);
 
+router.patch("/:id", project.updateStatusProj);
+
 router.delete("/:id", project.remove);
 
 module.exports = router;

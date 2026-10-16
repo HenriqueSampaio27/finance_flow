@@ -164,6 +164,20 @@ function update(id, data) {
   return getById(id);
 }
 
+function updateStatus(id, status) {
+  const result = db.prepare(`
+    UPDATE project
+    SET status = ?
+    WHERE id = ?
+  `).run(status, id);
+
+  if (result.changes === 0) {
+    return null;
+  }
+
+  return getById(id);
+}
+
 function remove(id) {
   const result = db
     .prepare("DELETE FROM project WHERE id = ?")
@@ -177,5 +191,6 @@ module.exports = {
   getAll,
   getById,
   update,
+  updateStatus,
   remove,
 };

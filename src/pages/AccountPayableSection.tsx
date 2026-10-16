@@ -16,7 +16,7 @@ import {
 import { PayableItem } from '../types/payablesType';
 import { formatCurrency } from '../utils/formatters';
 import { payablesTheme, styles, typography } from '../theme';
-import { UserType } from '../types/userType';
+import { Bank_account, UserType } from '../types/userType';
 
 /* -------------------------------------------------------------------------- */
 /*  Props                                                                      */
@@ -29,6 +29,7 @@ interface AccountPayableSectionProps {
   onUpdateStatus: (id: number, receipt: string, account: string) => void;
   user?: UserType | undefined | null;
   onExpensePayable: () => Promise<void>;
+  bank: Bank_account[]
 }
 
 /* -------------------------------------------------------------------------- */
@@ -93,7 +94,8 @@ export const AccountPayableSection: React.FC<AccountPayableSectionProps> = ({
   onDeletePayable,
   onUpdateStatus,
   user,
-  onExpensePayable
+  onExpensePayable,
+  bank
 }) => {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<FiltroStatus>('all');
@@ -111,13 +113,9 @@ export const AccountPayableSection: React.FC<AccountPayableSectionProps> = ({
 
   const hoje = hojeISO();
 
-  const bankAccounts = [
-    user?.bank_account1,
-    user?.bank_account2,
-    user?.bank_account3,
-    user?.bank_account4,
-    user?.bank_account5,
-  ].filter((a): a is string => !!a && a.trim() !== '');
+  const bankAccounts = bank
+  .filter((account) => !!account)
+  .map((account) => account.bank);
 
   // Itens já com o status efetivo calculado
   const items = useMemo(

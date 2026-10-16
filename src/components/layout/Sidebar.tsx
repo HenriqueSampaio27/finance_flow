@@ -100,16 +100,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
       {/* Bottom Footer */}
       <div className="p-4 border-t border-slate-100 space-y-3">
-        <div className="space-y-1">
-          <button 
-            onClick={onOpenConfig}
-            className="w-full flex items-center gap-3 px-3 py-2 text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 rounded-lg transition-colors cursor-pointer"
-          >
-            <Settings className="w-4 h-4 text-slate-400" />
-            <span>Configurações</span>
-          </button>
-          
-        </div>
 
         {/* User profile card */}
         <div className="flex items-center gap-3 pt-2 border-t border-slate-100 px-2">

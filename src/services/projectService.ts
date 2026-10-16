@@ -48,7 +48,7 @@ export async function updateProjectStatus(
     message: string;
     project: Projeto2D;
   }>(`/project/${id}`, {
-    method: "PUT",
+    method: "PATCH",
     body: JSON.stringify({ status }),
   });
 }

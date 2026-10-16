@@ -1,6 +1,52 @@
 
 const db = require("../database/database");
 
+// Calcula o valor líquido da entrada.
+function getNetAmount(amount, fee) {
+  return Number(amount || 0) - (((Number(fee) * Number(amount))/100 || 0));
+}
+
+// Atualiza o Caixa Interno.
+function updateCashBalance(amount) {
+  const user = db
+    .prepare("SELECT id FROM users ORDER BY id LIMIT 1")
+    .get();
+
+  if (!user) {
+    throw new Error("Nenhum usuário cadastrado para atualizar o Caixa Interno.");
+  }
+
+  db.prepare(`
+    UPDATE users
+    SET cash_balance_initial = cash_balance_initial + ?
+    WHERE id = ?
+  `).run(amount, user.id);
+}
+
+// Atualiza o saldo de uma conta bancária.
+// O argumento amount pode ser positivo ou negativo.
+function updateBankBalance(destinationAccount, amount) {
+  if (!destinationAccount) {
+    throw new Error("A conta bancária de destino não foi informada.");
+  }
+
+  const account = db
+    .prepare("SELECT id FROM bank WHERE bank = ? LIMIT 1")
+    .get(destinationAccount);
+
+  if (!account) {
+    throw new Error(
+      `A conta bancária "${destinationAccount}" não foi encontrada.`
+    );
+  }
+
+  db.prepare(`
+    UPDATE bank
+    SET saldo = saldo + ?
+    WHERE id = ?
+  `).run(amount, account.id);
+}
+
 function create(data) {
   const {
     client_id,
@@ -255,6 +301,27 @@ function registerPayment(
       id
     );
 
+    const netAmount = getNetAmount(
+      amount,
+      paymentFee
+    );
+
+    if (
+      String(receipt || "").trim().toLowerCase() === "espécie"
+    ) {
+      // Recebimento em espécie:
+      // atualizar o Caixa Interno do usuário.
+
+      updateCashBalance(netAmount);
+    } else {
+      // Outros meios de recebimento:
+      // atualizar a conta bancária de destino.
+
+      updateBankBalance(
+        destination_account,
+        netAmount
+      );
+    }
 
     // ======================================
     // 8. RETORNAR CONTA ATUALIZADA

@@ -16,7 +16,7 @@ import {
 import { ExpenseItem } from '../types/expensesType';
 import { formatCurrency } from '../utils/formatters';
 import { entriesTheme, expensesTheme, styles, typography } from '../theme';
-import { UserType } from '../types/userType';
+import { Bank_account, UserType } from '../types/userType';
 import DateRangeFilter from '../components/modals/DateRangeFilter';
 
 interface ExpensesSectionProps {
@@ -24,13 +24,15 @@ interface ExpensesSectionProps {
   onOpenNewExpense: () => void;
   onDeleteExpense: (id: number) => void;
   user: UserType | null | undefined
+  bank: Bank_account[]
 }
 
 export const ExpensesSection: React.FC<ExpensesSectionProps> = ({
   expenses,
   onOpenNewExpense,
   onDeleteExpense,
-  user
+  user,
+  bank
 }) => {
 
   const [startDate, setStartDate] = useState("");
@@ -43,13 +45,9 @@ export const ExpensesSection: React.FC<ExpensesSectionProps> = ({
   const [currentPage, setCurrentPage] = useState(1);
   const pageSize = 10;
 
-  const accounts = [
-    user?.bank_account1,
-    user?.bank_account2,
-    user?.bank_account3,
-    user?.bank_account4,
-    user?.bank_account5,
-  ].filter((account): account is string => !!account);
+  const accounts = bank
+  .filter((account) => !!account)
+  .map((account) => account.bank);
 
   const filteredExpenses = useMemo(() => {
   

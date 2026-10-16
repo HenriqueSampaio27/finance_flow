@@ -27,7 +27,7 @@ import { ConfiguracoesSection } from './pages/ConfiguracoesSection';
 import { useBanks } from './hooks/useBank';
 
 export default function App() {
-  const [currentTab, setCurrentTab] = useState<NavigationTab>('entradas');
+  const [currentTab, setCurrentTab] = useState<NavigationTab>('dashboard');
   const [globalSearch, setGlobalSearch] = useState('');
   const search = globalSearch.toLowerCase();
   // State collections
@@ -75,12 +75,17 @@ export default function App() {
     saveProject,
     project,
     deleteProjectId,
+    updateStatusProj,
     editProject
   } = useProject()
+  const {
+    banks,
+    loadBanks
+  } = useBanks();
 
   const filteredEntries = entries.filter(
     entry => !search || entry.description.toLowerCase().includes(search)// ||
-      //entry.cliente_id.toLowerCase().includes(search)
+      
   );
 
   const filteredExpenses = expenses.filter(
@@ -140,8 +145,10 @@ export default function App() {
               entries={entries}
               expenses={expenses}
               payables={payable}
+              clients={clients}
               receivables={receivables}
               user={user}
+              bank={banks}
               project={project}
               onNavigate={setCurrentTab}
               onOpenNewEntry={() => setIsNewEntryOpen(true)}
@@ -155,6 +162,8 @@ export default function App() {
               onOpenNewEntry={() => setIsNewEntryOpen(true)}
               onDeleteEntry={deleteEntryId}
               user={user}
+              client={clients}
+              bank={banks}
             />
           )}
 
@@ -164,6 +173,7 @@ export default function App() {
               onOpenNewExpense={() => setIsNewExpenseOpen(true)}
               onDeleteExpense={deleteExpenseId}
               user={user}
+              bank={banks}
             />
           )}
 
@@ -175,6 +185,7 @@ export default function App() {
               onUpdateStatus={registerPayment}
               user={user}
               onExpensePayable={loadExpenses}
+              bank={banks}
             />
           )}
 
@@ -188,6 +199,7 @@ export default function App() {
               user={user}
               onEntryCreated={loadEntry}
               modalProps = {() => setNameModalProps("Novo Recebimento")}
+              bank={banks}
             />
           )}
 
@@ -217,6 +229,7 @@ export default function App() {
             <ConfiguracoesSection
               user={user}
               onUpdate={saveUser}
+              load={loadBanks}
             />
           )}
         </main>
@@ -228,6 +241,7 @@ export default function App() {
         onAddEntry={saveEntries}
         user={user}
         client={clients}
+        bank={banks}
       />)}
 
       <ReceivableModal
@@ -237,6 +251,7 @@ export default function App() {
         client={clients}
         modalName={nameModalProps}
         projectReceipt={selectedProject}
+        onUpdateProject={updateStatusProj}
       />
 
       <ExpensesModal
@@ -244,6 +259,7 @@ export default function App() {
         onClose={() => setIsNewExpenseOpen(false)}
         onAddExpense={saveExpense}
         user={user}
+        bank={banks}
       />
 
       <PayableModal

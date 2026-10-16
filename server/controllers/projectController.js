@@ -59,6 +59,39 @@ async function updateProject(req, res) {
   }
 }
 
+async function updateStatusProj(req, res) {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    if (!status) {
+      return res.status(400).json({
+        message: "O status é obrigatório"
+      });
+    }
+
+    const pro = project.updateStatus(id, status);
+
+    if (!pro) {
+      return res.status(404).json({
+        message: "Projeto não encontrado"
+      });
+    }
+
+    return res.json({
+      message: "Status do projeto atualizado com sucesso",
+      pro
+    });
+
+  } catch (error) {
+    console.error("Erro ao atualizar status do projeto:", error);
+
+    return res.status(500).json({
+      message: "Erro ao atualizar status do projeto"
+    });
+  }
+}
+
 async function getById(req, res) {
   try {
     const { id } = req.params;
@@ -112,5 +145,6 @@ module.exports = {
   getAll,
   getById,
   remove,
-  updateProject
+  updateProject,
+  updateStatusProj
 };

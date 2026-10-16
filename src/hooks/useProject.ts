@@ -93,7 +93,7 @@ export function useProject(){
         }
       };
 
-    const updateStatus = async (
+    const updateStatusProj = async (
         id: string,
         status: string
         ) => {
@@ -123,7 +123,7 @@ export function useProject(){
         project,
         saveProject,
         deleteProjectId,
-        updateStatus,
+        updateStatusProj,
         loadProject,
         editProject
     }

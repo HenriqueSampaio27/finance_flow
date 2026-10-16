@@ -23,11 +23,13 @@ import { BankDate } from '../components/modals/BankDate';
 interface UserModalProps {
   user: UserType | null | undefined;
   onUpdate: (save: UserType) => void;
+  load: () => void;
 }
 
 export const ConfiguracoesSection: React.FC<UserModalProps> = ({
   user,
-  onUpdate
+  onUpdate,
+  load
 }) => {
   const [empresa, setEmpresa] = useState({
     nome: 'Raynex Solutions',
@@ -335,12 +337,13 @@ export const ConfiguracoesSection: React.FC<UserModalProps> = ({
               />
             </div>
 
-
           </div>
         </div>
 
           {/* DADOS BANCÁRIOS */}
-          <BankDate/>
+          <BankDate
+          loadEntryBank={load}
+          />
           {/* CAIXA INTERNO */}
           <div className="bg-white rounded-2xl border border-slate-200/90 p-6 space-y-4 shadow-xs">
             <div className="flex items-center gap-3">
@@ -384,6 +387,88 @@ export const ConfiguracoesSection: React.FC<UserModalProps> = ({
                 Informe o saldo inicial em dinheiro utilizado no controle financeiro.
               </p>
             </div>
+          </div>
+
+          {/* TAXA */}
+          <div className="bg-white rounded-2xl border border-slate-200/90 p-6 space-y-4 shadow-xs">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-emerald-50">
+                <Banknote className="h-5 w-5 text-emerald-600" />
+              </div>
+
+              <div>
+                <h3 className="text-sm font-bold text-slate-900">
+                  TAXAS
+                </h3>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-700">
+                  Taxa Crédito (%)
+                </label>
+
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.credit_fee ?? 0}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      credit_fee:
+                        e.target.value === "" ? 0 : Number(e.target.value),
+                    }))
+                  }
+                  className={styles.input}
+                  placeholder="0,00"
+                />
+              </div>
+              <div className="space-y-1">
+                  <label className="text-xs font-semibold text-slate-700">
+                    Taxa Débito (%)
+                  </label>
+
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={formData.debit_fee ?? 0}
+                    onChange={(e) =>
+                      setFormData((prev) => ({
+                        ...prev,
+                        debit_fee:
+                          e.target.value === "" ? 0 : Number(e.target.value),
+                      }))
+                    }
+                    className={styles.input}
+                    placeholder="0,00"
+                  />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs font-semibold text-slate-700">
+                  Taxa PIX (%)
+                </label>
+
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={formData.pix_fee ?? 0}
+                  onChange={(e) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      pix_fee:
+                        e.target.value === "" ? 0 : Number(e.target.value),
+                    }))
+                  }
+                  className={styles.input}
+                  placeholder="0,00"
+                />
+              </div>
+            </div>
+            
           </div>
 
         {/* Parâmetros do Módulo Projetos 2D */}
